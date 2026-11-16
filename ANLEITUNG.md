@@ -16,12 +16,24 @@ Es gibt zwei Wege:
 ### Was man braucht
 
 - iPhone und iPad mit **iOS / iPadOS 16.4 oder neuer** (Safari). Android: Chrome.
-- Beide Geräte im **selben WLAN**. In der Halle geht auch der Hotspot des Handys, mit dem sich das Tablet verbindet (noch nicht an echten Geräten ausprobiert).
-- Eine Adresse, unter der beide Geräte die App öffnen können. Dafür gibt es zwei Möglichkeiten:
-  - **Start über den Mac** (geht sofort, zum Ausprobieren zu Hause), siehe unten.
-  - **Online-Adresse** (für die Halle, ganz ohne Mac). Die App muss dafür einmal ins Internet gestellt werden. Das ist vorbereitet, aber noch nicht eingerichtet.
+- Beide Geräte im **selben WLAN**. Gibt es in der Halle keines: am Handy den **Hotspot** einschalten und das Tablet damit verbinden (noch nicht an echten Geräten ausprobiert).
+- **Internet** zum Öffnen der App und zum Verbinden. Das Video selbst läuft danach direkt vom Handy zum Tablet.
 
-### Zu Hause ausprobieren: Start über den Mac
+### In der Halle: über die Online-Adresse
+
+1. Am **Tablet** in Safari öffnen: **`robschman.github.io/trainings-kamera`**
+   Die Adresse springt auf `beautyroutine.app/trainings-kamera` um. Das ist richtig so.
+2. **„📱 Handy als Kamera“** tippen. Es erscheint ein QR-Code.
+3. Den Code mit der Kamera-App des **Handys** scannen und den Link öffnen.
+4. Am Handy **„Kamera starten“** tippen und den Kamera-Zugriff erlauben.
+
+Nach ein paar Sekunden erscheint das Bild am Tablet und oben steht „AUFNAHME“.
+
+- Beim ersten Öffnen lädt das Tablet einmal bis zu 20 MB (die Personen-Erkennung). Danach startet die App schnell.
+- Am Tablet die Seite über **Teilen → „Zum Home-Bildschirm“** ablegen. Dann startet sie wie eine normale App.
+- Zum gegenseitigen Finden tauschen Handy und Tablet ein paar kurze, verschlüsselte Nachrichten über den Dienst ntfy.sh aus. Bilder und Videos gehen dort nicht durch.
+
+### Ohne Internet: Start über den Mac
 
 1. Am Mac **`Start-Mac.command`** doppelklicken. Es öffnet sich ein Fenster (offen lassen) und eine Seite mit einem QR-Code.
    Fragt der Mac, ob „python3“ Verbindungen annehmen darf: **Erlauben**.
@@ -30,8 +42,6 @@ Es gibt zwei Wege:
 4. Am Tablet **„📱 Handy als Kamera“** tippen. Es erscheint ein zweiter QR-Code.
 5. Diesen Code mit der Kamera-App des **Handys** scannen und den Link öffnen. Auch hier einmal die Warnung bestätigen.
 6. Am Handy **„Kamera starten“** tippen und den Kamera-Zugriff erlauben.
-
-Nach etwa einer Sekunde erscheint das Bild am Tablet und oben steht „AUFNAHME“.
 
 Der Mac wird nur zum Öffnen der Seiten gebraucht. Das Video läuft direkt vom Handy zum Tablet.
 
@@ -120,6 +130,8 @@ Die Aufnahme läuft in jeder Ansicht weiter.
 | Problem | Lösung |
 |---|---|
 | Tablet zeigt „Warte auf das Handy …“ | Sind beide im selben WLAN? Am Handy die Seite neu laden und „Kamera starten“ tippen. |
+| „Die Vermittlung ist nicht erreichbar“ | Hat das Gerät Internet? Über die Online-Adresse ist es zum Verbinden kurz nötig. |
+| „Zu viele Verbindungsversuche“ | Eine Minute warten, dann „↻ Neu verbinden“ tippen. |
 | „Handy und Tablet finden sich nicht“ | Manche Gäste-WLANs lassen Geräte nicht miteinander reden. Dann das Tablet mit dem Hotspot des Handys verbinden. |
 | Am Handy steht „WLAN zu langsam!“ | Näher zusammenrücken oder ⚙ → Qualität auf 4 Mbit/s senken. |
 | Bild bleibt stehen | Ist das Handy gesperrt oder die Seite im Hintergrund? Seite wieder nach vorn holen. |

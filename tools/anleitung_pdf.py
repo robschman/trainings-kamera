@@ -85,19 +85,23 @@ story = [
               'die Szene automatisch aus – 2 Sekunden vorher bis 1,5 Sekunden danach – und spielt sie sofort in '
               'Zeitlupe ab. Das Video geht direkt vom Handy zum Tablet, nicht ins Internet.', sub),
 
-    Paragraph('Handy + Tablet per WLAN: Start über den Mac', h2),
+    Paragraph('Handy + Tablet verbinden', h2),
     steps([
-        'Handy, Tablet und Mac ins <b>selbe WLAN</b> bringen.',
-        'Am Mac <b>Start-Mac.command</b> doppelklicken und das Fenster offen lassen. Es öffnet sich eine Seite mit '
-        'einem QR-Code. Fragt der Mac, ob „python3“ Verbindungen annehmen darf: <b>Erlauben</b>.',
-        'Am <b>Tablet</b> den QR-Code mit der Kamera-App scannen (oder die angezeigte Adresse in Safari eintippen).',
-        'Safari warnt beim ersten Mal: „Diese Verbindung ist nicht privat“. Das ist hier in Ordnung, die Verbindung '
-        'bleibt im eigenen WLAN: <b>Details einblenden</b>, dann <b>diese Website öffnen</b>.',
-        'Am Tablet <b>„Handy als Kamera“</b> tippen. Es erscheint ein zweiter QR-Code.',
-        'Diesen Code mit der Kamera-App des <b>Handys</b> scannen, den Link öffnen und die Warnung einmal bestätigen.',
-        'Am Handy <b>„Kamera starten“</b> tippen und den Kamera-Zugriff erlauben. Nach etwa einer Sekunde erscheint '
+        'Handy und Tablet ins <b>selbe WLAN</b> bringen. Kein WLAN in der Halle? Am Handy den <b>Hotspot</b> '
+        'einschalten und das Tablet damit verbinden.',
+        'Am <b>Tablet</b> in Safari diese Adresse öffnen:<br/><font size="13"><b>robschman.github.io/trainings-kamera</b></font><br/>'
+        '<font color="#5D6B7A">Die Adresse springt auf beautyroutine.app/trainings-kamera um. Das ist richtig so.</font>',
+        'Am Tablet <b>„Handy als Kamera“</b> tippen. Es erscheint ein QR-Code.',
+        'Den Code mit der Kamera-App des <b>Handys</b> scannen und den Link öffnen.',
+        'Am Handy <b>„Kamera starten“</b> tippen und den Kamera-Zugriff erlauben. Nach ein paar Sekunden erscheint '
         'das Bild am Tablet.',
     ]),
+    Spacer(1, 2),
+    box('<b>Internet:</b> Zum Öffnen der App und zum Verbinden brauchen beide Geräte Internet. Beim ersten Öffnen lädt '
+        'das Tablet einmal bis zu 20 MB. Das Video selbst läuft direkt vom Handy zum Tablet.', ACCENT),
+    Spacer(1, 6),
+    box('<b>Tipp:</b> Am Tablet in Safari auf <b>Teilen</b> und dann <b>„Zum Home-Bildschirm“</b> tippen. '
+        'Dann startet die Trainings-Kamera wie eine normale App.', GREEN),
 
     Paragraph('Das Handy aufstellen', h2),
     *bullets([
@@ -112,8 +116,9 @@ story = [
     box('<b>Verbindung weg?</b> Das Tablet zeigt wieder den QR-Code und wartet. Sobald das Handy die Seite wieder '
         'offen hat, verbinden sich beide von selbst. Der Code bleibt gleich.', GREEN),
     Spacer(1, 6),
-    box('<b>In der Halle ohne Mac:</b> Dafür braucht die App eine Online-Adresse. Das ist vorbereitet, aber noch '
-        'nicht eingerichtet. Dann genügen Handy und Tablet im selben WLAN oder das Tablet im Hotspot des Handys.', ACCENT),
+    box('<b>Ohne Internet (zu Hause):</b> Mac, Handy und Tablet ins selbe WLAN. Am Mac <b>Start-Mac.command</b> '
+        'doppelklicken und dem QR-Code folgen. Safari warnt dabei einmal: <b>Details einblenden</b>, dann '
+        '<b>diese Website öffnen</b>.', GREY),
 
     PageBreak(),
     Paragraph('Die Erkennung einstellen', h2),
@@ -146,6 +151,7 @@ story = [
     Paragraph('Wenn etwas nicht geht', h2),
     table([
         ('Tablet wartet auf das Handy', 'Sind beide im selben WLAN? Am Handy die Seite neu laden und „Kamera starten“ tippen.'),
+        ('„Vermittlung nicht erreichbar“', 'Hat das Gerät Internet? Zum Verbinden ist es kurz nötig.'),
         ('Geräte finden sich nicht', 'Manche Gäste-WLANs trennen die Geräte. Dann das Tablet mit dem Hotspot des Handys verbinden.'),
         ('„WLAN zu langsam!“', 'Näher zusammenrücken oder in den Einstellungen die Qualität auf 4 Mbit/s senken.'),
         ('Bild bleibt stehen', 'Handy gesperrt oder Seite im Hintergrund? Seite wieder nach vorn holen.'),
