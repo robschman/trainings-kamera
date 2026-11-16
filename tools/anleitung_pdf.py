@@ -98,7 +98,7 @@ story = [
     ]),
     Spacer(1, 2),
     box('<b>Internet:</b> Zum Öffnen der App und zum Verbinden brauchen beide Geräte Internet. Beim ersten Öffnen lädt '
-        'das Tablet einmal bis zu 20 MB. Das Video selbst läuft direkt vom Handy zum Tablet.', ACCENT),
+        'das Tablet einmal rund 10 MB. Das Video selbst läuft direkt vom Handy zum Tablet.', ACCENT),
     Spacer(1, 6),
     box('<b>Tipp:</b> Am Tablet in Safari auf <b>Teilen</b> und dann <b>„Zum Home-Bildschirm“</b> tippen. '
         'Dann startet die Trainings-Kamera wie eine normale App.', GREEN),

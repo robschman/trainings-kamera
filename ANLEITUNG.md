@@ -29,7 +29,7 @@ Es gibt zwei Wege:
 
 Nach ein paar Sekunden erscheint das Bild am Tablet und oben steht „AUFNAHME“.
 
-- Beim ersten Öffnen lädt das Tablet einmal bis zu 20 MB (die Personen-Erkennung). Danach startet die App schnell.
+- Beim ersten Öffnen lädt das Tablet einmal rund 10 MB (die Personen-Erkennung). Danach startet die App schnell.
 - Am Tablet die Seite über **Teilen → „Zum Home-Bildschirm“** ablegen. Dann startet sie wie eine normale App.
 - Zum gegenseitigen Finden tauschen Handy und Tablet ein paar kurze, verschlüsselte Nachrichten über den Dienst ntfy.sh aus. Bilder und Videos gehen dort nicht durch.
 
