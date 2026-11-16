@@ -130,14 +130,15 @@ story = [
         '<font color="#5D6B7A"><b>Grauer Rahmen „zu weit weg“</b></font> – Leute im Hintergrund werden ignoriert.',
         'Der <font color="#E89400"><b>gelbe Balken</b></font> links im Bild zeigt die <b>Mindestgröße</b>: Nur wer '
         'mindestens so groß im Bild ist, zählt. Standard: 40 % der Bildhöhe.',
-        '<b>„' + SYM('▭') + ' Bereich“</b>: mit dem Finger einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht.',
-        'Für andere Sportarten in den Einstellungen ein <b>neues Profil</b> anlegen (z. B. „Fußball Schuss“).',
+        '<b>„Bereich“</b>: mit dem Finger einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht. '
+        '<b>„Bereich löschen“</b> entfernt ihn wieder.',
+        'Für andere Sportarten in den Einstellungen (Zahnrad) ein <b>neues Profil</b> anlegen und dort umschalten.',
     ]),
 
     Paragraph('Die Ansichten', h2),
     table([
         ('Live | Szene', 'Links das Kamerabild, rechts die Szene.'),
-        ('Szene | Szene', 'Zwei Szenen nebeneinander. Mit <b>' + SYM('⇄') + ' Synchron</b> laufen beide gemeinsam.'),
+        ('Szene | Szene', 'Zwei Szenen nebeneinander. Mit <b>Synchron</b> (zwei Pfeile) laufen beide gemeinsam.'),
         ('Nur Szene', 'Die Szene groß über den ganzen Bildschirm.'),
         ('Verzögert', 'Das Live-Bild läuft 5 Sekunden später – der Spieler sieht sich selbst.'),
     ], [38 * mm, W - 38 * mm]),
@@ -145,8 +146,8 @@ story = [
     Paragraph('Szenen speichern', h2),
     *bullets([
         'Szenen bleiben am Tablet gespeichert. Behalten werden die letzten 150.',
-        'Szenen mit <b>Stern ' + SYM('★') + '</b> werden nie automatisch gelöscht.',
-        'Der <b>Pfeil-nach-unten-Knopf</b> öffnet am Tablet das Teilen-Menü (in „Fotos“ sichern, weiterschicken).',
+        '<b>„Behalten“</b> (Stern): Diese Szenen werden nie automatisch gelöscht.',
+        '<b>„Speichern“</b> (Pfeil nach unten) öffnet am Tablet das Teilen-Menü (in „Fotos“ sichern, weiterschicken).',
         '<b>„Szene markieren“</b> speichert sofort die letzten 8 Sekunden.',
     ]),
 
@@ -169,19 +170,22 @@ story = [
     table([
         ('Ins Bild tippen', 'Abspielen / Pause'),
         ('Über das Bild wischen', 'Vor- und zurückspulen'),
-        ('Knöpfe links und rechts von ' + SYM('▶'), 'Ein Bild zurück / vor'),
-        ('0,1× bis 2×', 'Tempo wählen'),
+        ('Knöpfe neben ' + SYM('▶'), 'Ein Bild zurück / vor'),
+        ('0,1× bis 2×', 'Tempo: 0,25× = vierfache Zeitlupe'),
         ('Doppelt tippen', 'Hineinzoomen (Ball, Hand, Fuß)'),
         ('Zwei Finger spreizen', 'Stufenlos zoomen'),
-        ('A  /  B  /  ' + SYM('✕'), 'Schleife: Anfang / Ende / löschen'),
+        ('Schleife: von  /  bis  /  ' + SYM('✕'), 'Ausschnitt wiederholen: Anfang / Ende / aufheben'),
         ('Szene lange drücken', 'Im zweiten Player öffnen (Vergleich)'),
-        ('Stern ' + SYM('★'), 'Szene behalten'),
-        ('Pfeil nach unten', 'Szene teilen oder sichern'),
+        ('Behalten (Stern ' + SYM('★') + ')', 'Szene wird nie von selbst gelöscht'),
+        ('Speichern (Pfeil nach unten)', 'Szene teilen oder in „Fotos“ sichern'),
         ('Szene markieren', 'Die letzten 8 Sekunden speichern'),
     ], [70 * mm, W - 70 * mm], key_style=big_key, txt_style=big_txt, pad=7),
     Spacer(1, 10),
+    Paragraph('Die Leiste unter der Szene passt sich dem Bildschirm an: Ist wenig Platz, steht sie in zwei Zeilen und zeigt '
+              'bei „Behalten“ und „Speichern“ nur das Zeichen. Alle Zeichen erklärt das <b>?</b> oben rechts am Tablet.', body),
+    Spacer(1, 8),
     Paragraph('Am PC mit Tastatur: Leertaste = Abspielen/Pause · Pfeiltasten = Bild für Bild · 1–5 = Tempo · '
-              'M = Szene markieren · S = Stern · D = Live/verzögert', small),
+              'A / B / L = Schleife von / bis / aufheben · M = Szene markieren · S = Behalten · D = Live/verzögert', small),
 ]
 
 doc = BaseDocTemplate(sys.argv[1] if len(sys.argv) > 1 else 'Anleitung-Trainings-Kamera.pdf', pagesize=A4,

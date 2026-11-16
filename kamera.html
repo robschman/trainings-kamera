@@ -27,7 +27,9 @@
       font: inherit; color: #e8edf3; background: rgba(31,38,48,.9); border: 1px solid #3a4656;
       border-radius: 10px; padding: 10px 14px; min-height: 46px;
     }
+    button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; cursor: pointer; }
     button.primary { background: var(--accent); border-color: var(--accent); color: #1a1200; font-weight: 700; font-size: 20px; padding: 14px 26px; }
+    .ic { width: 20px; height: 20px; flex: none; }
     .top, .bottom {
       position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
       padding: 10px max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
@@ -40,7 +42,14 @@
     .pill.bad { background: var(--red); color: #fff; }
     .grow { flex: 1; }
     .info { font-size: 13px; color: #cfd6de; text-shadow: 0 1px 2px #000; }
-    .bottom select { max-width: 60vw; }
+    /* unten: Linse links, Knöpfe rechts; auf schmalen Handys die Linse in einer eigenen Zeile darüber */
+    .bottom select { flex: 0 1 300px; min-width: 0; text-overflow: ellipsis; }
+    .bottom button { flex: none; }
+    @media (max-width: 560px) {
+      .bottom select { flex: 1 1 100%; }
+      .bottom .grow { display: none; }
+      .bottom button { flex: 1 1 0; }
+    }
     .cover {
       position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; gap: 14px;
       padding: 24px; text-align: center; overflow: auto;
@@ -70,7 +79,7 @@
     <select id="camSel" title="Kamera / Linse wählen"></select>
     <span class="grow"></span>
     <button id="dimBtn" title="Bildschirm abdunkeln (spart Akku)">🌙 Abdunkeln</button>
-    <button id="stopBtn" class="stop" title="Kamera ausschalten und Übertragung beenden">■ Beenden</button>
+    <button id="stopBtn" class="stop" title="Kamera ausschalten und Übertragung beenden"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>Beenden</button>
   </div>
 
   <div class="dim" id="dim" hidden>Kamera läuft und sendet.<br>Tippen, um das Bild wieder zu zeigen.</div>
@@ -82,7 +91,7 @@
       <p><input id="codeInput" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH"></p>
     </div>
     <p id="codeShown" hidden>Verbunden mit Code <b id="codeText"></b> · <a href="#" id="codeChange" style="color:#9aa7b6">ändern</a></p>
-    <button class="primary" id="startBtn">▶ Kamera starten</button>
+    <button class="primary" id="startBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13l10-6.5z" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Kamera starten</button>
     <p id="stopNote" hidden><b>Übertragung beendet.</b> Die Kamera ist aus.</p>
     <p>Handy fest aufstellen – <b>hochkant oder quer</b>, so wie es steht, wird gefilmt. Die Seite muss offen und im Vordergrund bleiben.</p>
     <p class="error" id="err"></p>

@@ -1,8 +1,11 @@
 // Szenen-Player: Tempo-Stufen, Einzelbild, Wischen/Ziehen zum Spulen, A–B-Schleife, Zoom.
 // Bedienbar mit Finger (Tablet) und mit Maus + Tastatur (PC).
 
+import { ic, setIcon } from './icons.js';
+
 export const SPEEDS = [0.1, 0.25, 0.5, 1, 2];
 const fmt = s => (Math.max(0, s) || 0).toFixed(2).replace('.', ',');
+const de = n => String(n).replace('.', ',');
 
 export class Player extends EventTarget {
   clip = null;
@@ -16,35 +19,52 @@ export class Player extends EventTarget {
     this.root = root;
     this.name = name;
     root.classList.add('player');
+    const coarse = matchMedia('(pointer: coarse)').matches;
+    const empty = name === 'p2'
+      ? `Zum Vergleichen: Szene in der Liste ${coarse ? 'lange drücken' : 'mit Shift anklicken'}`
+      : 'Szene in der Liste wählen';
+    // Die Leiste besteht aus vier festen Gruppen. Wie sie sich auf eine bis drei Zeilen verteilen,
+    // regelt styles.css nach der Breite des Fensters, in dem der Player sitzt (.brk = Zeilenumbruch).
     root.innerHTML = `
       <div class="stage">
         <video muted playsinline preload="auto"></video>
-        <div class="empty">Szene in der Liste wählen</div>
-        <div class="hud"><span class="h-speed">1×</span><span class="h-zoom"></span></div>
+        <div class="empty">${empty}</div>
+        <div class="hud"><span class="h-speed">1×</span></div>
+        <button class="zoomchip" title="Zoom zurücksetzen (Z)" hidden><span></span>${ic('x')}</button>
         <div class="scrubhint">◀ wischen ▶</div>
       </div>
-      <div class="timeline"><div class="loop"></div><div class="played"></div><div class="head"></div></div>
-      <div class="controls">
-        <button data-a="prev" title="Bild zurück (←)">⏮</button>
-        <button data-a="play" class="big" title="Abspielen/Pause (Leertaste)">▶</button>
-        <button data-a="next" title="Bild vor (→)">⏭</button>
-        <span class="sep"></span>
-        ${SPEEDS.map((s, i) => `<button data-speed="${s}" title="Taste ${i + 1}">${String(s).replace('.', ',')}×</button>`).join('')}
-        <span class="sep"></span>
-        <button data-a="A" title="Schleifen-Anfang (A)">A</button>
-        <button data-a="B" title="Schleifen-Ende (B)">B</button>
-        <button data-a="clearloop" title="Schleife löschen (L)">✕</button>
-        <span class="sep"></span>
-        <button data-a="zoomout" title="Zoom zurücksetzen">⤢</button>
+      <div class="trow">
+        <div class="timeline"><div class="loop"></div><div class="played"></div><div class="head"></div></div>
         <span class="time">–</span>
-        <span class="grow"></span>
-        <button data-a="star" title="Mit Stern behalten (S)">☆</button>
-        <button data-a="export" title="Als Video speichern (E)">⬇</button>
+      </div>
+      <div class="controls pbar">
+        <div class="grp g-step">
+          <button data-a="prev" title="Ein Bild zurück (←)" aria-label="Ein Bild zurück">${ic('prev')}</button>
+          <button data-a="play" class="big" title="Abspielen / Pause (Leertaste)" aria-label="Abspielen oder Pause">${ic('play')}</button>
+          <button data-a="next" title="Ein Bild vor (→)" aria-label="Ein Bild vor">${ic('next')}</button>
+        </div>
+        <i class="brk b0"></i>
+        <div class="grp seg g-speed" role="group" aria-label="Tempo">
+          ${SPEEDS.map((s, i) => `<button data-speed="${s}" title="Tempo ${de(s)}× (Taste ${i + 1})">${de(s)}×</button>`).join('')}
+        </div>
+        <i class="brk b1"></i>
+        <div class="grp g-loop" role="group" aria-label="Schleife">
+          <span class="cap" title="Nur einen Ausschnitt immer wieder abspielen">${ic('loop')}<span class="lbl">Schleife</span></span>
+          <button data-a="A" title="Die Schleife beginnt an dieser Stelle (A)">von</button>
+          <button data-a="B" title="Die Schleife endet an dieser Stelle (B)">bis</button>
+          <button data-a="clearloop" class="sq" title="Schleife aufheben (L)" aria-label="Schleife aufheben" disabled>${ic('x')}</button>
+        </div>
+        <div class="grp g-clip">
+          <button data-a="star" title="Mit Stern behalten – wird nicht automatisch gelöscht (S)" aria-label="Behalten">${ic('star')}<span class="lbl">Behalten</span></button>
+          <button data-a="export" title="Als Video speichern (E)" aria-label="Speichern">${ic('save')}<span class="lbl">Speichern</span></button>
+        </div>
       </div>`;
     this.video = root.querySelector('video');
     this.stage = root.querySelector('.stage');
     this.tl = root.querySelector('.timeline');
     this.$ = sel => root.querySelector(sel);
+    this.chip = root.querySelector('.zoomchip');
+    this.chip.addEventListener('click', () => { this.touch(); this.resetZoom(); });
 
     root.querySelector('.controls').addEventListener('click', e => {
       const b = e.target.closest('button');
@@ -68,7 +88,7 @@ export class Player extends EventTarget {
     v.requestVideoFrameCallback(tick);
     v.addEventListener('seeked', () => this.#updateTime());
     v.addEventListener('timeupdate', () => this.#updateTime());
-    v.addEventListener('ended', () => { if (this.loop) { v.currentTime = this.loopA ?? 0; v.play().catch(() => {}); } });
+    v.addEventListener('ended', () => { if (this.loop || this.loopA != null) { v.currentTime = this.loopA ?? 0; v.play().catch(() => {}); } });
     this.setSpeed(1);
   }
 
@@ -105,7 +125,7 @@ export class Player extends EventTarget {
     this.speed = s;
     this.video.playbackRate = s;
     this.root.querySelectorAll('[data-speed]').forEach(b => b.classList.toggle('on', +b.dataset.speed === s));
-    this.$('.h-speed').textContent = String(s).replace('.', ',') + '×';
+    this.$('.h-speed').textContent = de(s) + '×';
     if (broadcast) this.#emit('speed', s);
   }
 
@@ -118,9 +138,25 @@ export class Player extends EventTarget {
       case 'resume': v.play().catch(() => {}); break;
       case 'prev': this.step(-1); break;
       case 'next': this.step(1); break;
-      case 'A': this.loopA = v.currentTime; if (this.loopB != null && this.loopB <= this.loopA) this.loopB = null; break;
-      case 'B': this.loopB = v.currentTime; if (this.loopA != null && this.loopA >= this.loopB) this.loopA = null; this.loopA ??= 0; break;
-      case 'clearloop': this.loopA = this.loopB = null; break;
+      case 'A':
+        this.loopA = v.currentTime;
+        if (this.loopB != null && this.loopB <= this.loopA) this.loopB = null;
+        if (broadcast) this.#hint(this.loopB == null ? 'Schleife beginnt hier – an der Endstelle „bis“ tippen' : this.#loopText());
+        break;
+      case 'B':
+        this.loopB = v.currentTime;
+        if (this.loopA != null && this.loopA >= this.loopB) this.loopA = null;
+        this.loopA ??= 0;
+        if (this.loopB - this.loopA < 0.05) { this.loopA = this.loopB = null; break; } // ganz am Anfang: keine Schleife möglich
+        // gleich zeigen, was die Schleife macht
+        v.currentTime = this.loopA;
+        v.play().catch(() => {});
+        if (broadcast) this.#hint(this.#loopText());
+        break;
+      case 'clearloop':
+        if (broadcast && (this.loopA != null || this.loopB != null)) this.#hint('Schleife aufgehoben');
+        this.loopA = this.loopB = null;
+        break;
       case 'zoomout': this.resetZoom(); break;
       case 'star': case 'export': this.dispatchEvent(new CustomEvent(a, { detail: this.clip })); broadcast = false; break;
     }
@@ -155,8 +191,12 @@ export class Player extends EventTarget {
   #applyZoom() {
     this.video.style.transformOrigin = `${this.zx * 100}% ${this.zy * 100}%`;
     this.video.style.transform = this.zoom > 1 ? `scale(${this.zoom})` : '';
-    this.$('.h-zoom').textContent = this.zoom > 1 ? ` · Zoom ${this.zoom.toFixed(1).replace('.', ',')}×` : '';
+    this.chip.hidden = this.zoom <= 1;
+    this.chip.firstElementChild.textContent = `Zoom ${de(this.zoom.toFixed(1))}×`;
   }
+
+  #hint(text) { this.dispatchEvent(new CustomEvent('hint', { detail: text })); }
+  #loopText() { return `Schleife von ${fmt(this.loopA ?? 0)} bis ${fmt(this.loopB ?? this.video.duration)} s`; }
 
   #emit(type, value) { this.dispatchEvent(new CustomEvent('sync', { detail: { type, value } })); }
 
@@ -167,7 +207,7 @@ export class Player extends EventTarget {
     const dist = () => { const [a, b] = [...pts.values()]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); };
 
     st.addEventListener('pointerdown', e => {
-      if ((e.pointerType === 'mouse' && e.button !== 0) || !this.clip) return;
+      if ((e.pointerType === 'mouse' && e.button !== 0) || !this.clip || e.target.closest('button')) return;
       this.touch();
       st.setPointerCapture(e.pointerId);
       pts.set(e.pointerId, e);
@@ -266,9 +306,13 @@ export class Player extends EventTarget {
   }
 
   #updateUI() {
-    this.$('[data-a="play"]').textContent = this.video.paused ? '▶' : '⏸';
-    this.$('[data-a="star"]').textContent = this.clip?.starred ? '★' : '☆';
-    this.$('[data-a="star"]').classList.toggle('on', !!this.clip?.starred);
+    setIcon(this.$('[data-a="play"]'), this.video.paused ? 'play' : 'pause');
+    const star = this.$('[data-a="star"]');
+    setIcon(star, this.clip?.starred ? 'star-on' : 'star');
+    star.classList.toggle('set', !!this.clip?.starred);
+    this.$('[data-a="A"]').classList.toggle('set', this.loopA != null);
+    this.$('[data-a="B"]').classList.toggle('set', this.loopB != null);
+    this.$('[data-a="clearloop"]').disabled = this.loopA == null && this.loopB == null;
     this.#updateTime();
   }
 

@@ -240,6 +240,6 @@ if (params.get('report')) {
   setInterval(() => fetch('api/testlog', { method: 'POST', body: JSON.stringify({
     page: 'cam', ua: navigator.userAgent.match(/(Chrome|Version)\/[\d.]+/)?.[0], running, link: link?.state,
     enc: `${encoder.codec} ${encoder.width}x${encoder.height}`, frames: encoder.frames, hold: encoder.hold, dropped,
-    buffered: link?.buffered, restarts: encoder.restarts, err: $('#err').textContent + ' ' + $('#info').textContent,
+    buffered: link?.buffered, restarts: encoder.restarts, vis: document.visibilityState, bottom: Math.round($('#bottom').getBoundingClientRect().height), stopBtn: Math.round($('#stopBtn').getBoundingClientRect().width), err: $('#err').textContent + ' ' + $('#info').textContent,
   }) }).catch(() => {}), 2000);
 }

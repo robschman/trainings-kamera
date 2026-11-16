@@ -3,3 +3,4 @@ tools/.cert/
 __pycache__/
 *.pyc
 Testliste-*.pdf
+Vorher-Nachher-*.png

@@ -48,16 +48,16 @@ Der Mac wird nur zum Öffnen der Seiten gebraucht. Das Video läuft direkt vom H
 
 - Fest aufstellen (Stativ), etwa 1–2 Meter vom Spieler entfernt.
 - **Hochkant oder quer:** So wie das Handy steht, wird gefilmt. Hochkant passt für die Schlagbewegung aus der Nähe, quer für den Anlauf. Das Handy kann auch im laufenden Betrieb gedreht werden.
-- Liegt das Bild am Tablet auf der Seite, dort unter dem Live-Bild **„⟳ Drehen“** tippen. Das passiert, wenn am iPhone die Ausrichtungssperre eingeschaltet ist und das Handy quer steht.
+- Liegt das Bild am Tablet auf der Seite, dort unter dem Live-Bild **„Drehen“** tippen. Das passiert, wenn am iPhone die Ausrichtungssperre eingeschaltet ist und das Handy quer steht.
 - Die Seite muss **offen und im Vordergrund** bleiben. Wird das Handy gesperrt oder die App gewechselt, stoppt die Kamera. Der Bildschirm bleibt von selbst an.
 - **Ans Ladegerät oder eine Powerbank** hängen, Filmen und Senden brauchen viel Strom.
 - **„🌙 Abdunkeln“** macht den Bildschirm fast schwarz und spart Akku. Die Kamera läuft weiter.
-- Die **Linse** (z. B. Weitwinkel) lässt sich am Handy unten links wählen oder am Tablet unter ⚙ → „Kamera am Handy“.
-- **„■ Beenden“** am Handy schaltet die Kamera aus und beendet die Übertragung. Die Seite einfach zu schließen geht genauso. Zum Weitermachen wieder „Kamera starten“ tippen.
+- Die **Linse** (z. B. Weitwinkel) lässt sich am Handy unten links wählen oder am Tablet unter Einstellungen (Zahnrad) → „Kamera am Handy“.
+- **„Beenden“** am Handy schaltet die Kamera aus und beendet die Übertragung. Die Seite einfach zu schließen geht genauso. Zum Weitermachen wieder „Kamera starten“ tippen.
 
 ### Wenn die Verbindung abbricht
 
-Das Tablet zeigt wieder den QR-Code und wartet. Sobald das Handy die Seite wieder offen hat, verbinden sich beide von selbst (gemessen: etwa 1 Sekunde). Der Code bleibt gleich, neu scannen ist nicht nötig. „↻ Neu verbinden“ stößt den Aufbau von Hand an.
+Das Tablet zeigt wieder den QR-Code und wartet. Sobald das Handy die Seite wieder offen hat, verbinden sich beide von selbst (gemessen: etwa 1 Sekunde). Der Code bleibt gleich, neu scannen ist nicht nötig. „Neu verbinden“ stößt den Aufbau von Hand an.
 
 ---
 
@@ -67,7 +67,7 @@ Das Tablet zeigt wieder den QR-Code und wartet. Sobald das Handy die Seite wiede
 2. iPhone anstecken, die Webcam-App auf iPhone und PC öffnen.
 3. **`Start-Windows.bat`** doppelklicken. Das schwarze Fenster offen lassen.
 4. In der App **„🎥 Kamera an diesem Gerät“** wählen und den Kamera-Zugriff erlauben.
-   Falsche Kamera? ⚙ → Kamera → „Camo“ bzw. „Iriun“ wählen.
+   Falsche Kamera? Einstellungen (Zahnrad) → Kamera → „Camo“ bzw. „Iriun“ wählen.
 
 Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …“ einige Sekunden stehen. Das ist normal.
 
@@ -77,9 +77,9 @@ Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …�
 
 - **Grüner Rahmen „Spieler“**: Diese Person löst eine Szene aus.
 - **Grauer Rahmen „zu weit weg“**: Leute im Hintergrund werden ignoriert.
-- Der **gelbe Balken** links im Live-Bild zeigt die Mindestgröße. Ändern: ⚙ → „Mindestgröße der Person“ (Standard: 40 % der Bildhöhe).
-- **„▭ Bereich“**: mit dem Finger oder der Maus einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht. Das **✕** daneben entfernt den Rahmen.
-- Für andere Sportarten: ⚙ → „+ Neues Profil“. Oben lässt sich zwischen den Profilen umschalten.
+- Der **gelbe Balken** links im Live-Bild zeigt die Mindestgröße. Ändern: Einstellungen (Zahnrad) → „Mindestgröße der Person“ (Standard: 40 % der Bildhöhe).
+- **„Bereich“**: mit dem Finger oder der Maus einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht. **„Bereich löschen“** entfernt den Rahmen.
+- Für andere Sportarten: Einstellungen (Zahnrad oben rechts) → „+ Neues Profil“. Umschalten lässt sich dort unter „Profil“; auf breiten Bildschirmen auch oben in der Kopfzeile.
 
 ## Bedienung
 
@@ -89,10 +89,15 @@ Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …�
 |---|---|
 | Ins Bild tippen | Abspielen / Pause |
 | Über das Bild wischen | Vor- und zurückspulen |
-| ⏮ ⏭ | Ein Bild zurück / vor |
-| Doppelt tippen, zwei Finger spreizen | Hineinzoomen (Ball, Hand, Fuß) |
+| Knöpfe links und rechts von ▶ | Ein Bild zurück / vor |
+| 0,1× bis 2× | Tempo (0,25× = vierfache Zeitlupe) |
+| Doppelt tippen, zwei Finger spreizen | Hineinzoomen (Ball, Hand, Fuß). „Zoom … ✕“ oben links im Bild stellt zurück |
+| Schleife: von / bis / ✕ | Nur einen Ausschnitt wiederholen: an der Anfangsstelle „von“ tippen, an der Endstelle „bis“. Das ✕ hebt die Schleife auf |
 | Szene lange drücken | Im zweiten Player öffnen (Vergleich) |
-| ⬇ | Szene teilen oder in „Fotos“ sichern |
+| Behalten (Stern) | Szene wird nie von selbst gelöscht |
+| Speichern (Pfeil nach unten) | Szene teilen oder in „Fotos“ sichern |
+
+Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen steht sie in zwei Zeilen und zeigt bei „Behalten“ und „Speichern“ nur das Zeichen. Alle Zeichen erklärt das **?** oben rechts.
 
 **Mit Maus und Tastatur (PC)**
 
@@ -103,18 +108,18 @@ Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …�
 | Shift + ← → | Eine Sekunde zurück / vor |
 | Maus gedrückt ziehen | Vor- und zurückspulen |
 | 1 – 5 | Tempo 0,1× · 0,25× · 0,5× · 1× · 2× |
-| A / B / L | Schleife: Anfang / Ende / löschen |
-| Doppelklick, Strg + Mausrad | Hineinzoomen |
+| A / B / L | Schleife: von / bis / aufheben |
+| Doppelklick, Strg + Mausrad | Hineinzoomen (Z = zurück) |
 | ↑ ↓ | Vorherige / nächste Szene |
 | M | Szene von Hand speichern (die letzten 8 s) |
-| S / E / Entf | Stern / speichern / löschen |
+| S / E / Entf | Behalten / speichern / löschen |
 | D | Live oder verzögertes Bild |
 | Shift + Klick auf Szene | Im zweiten Player öffnen |
 
 **Ansichten oben**
 
 - „Live | Szene“: links das Kamerabild, rechts die Szene.
-- „Szene | Szene“: zwei Szenen nebeneinander. Mit **⇄ Synchron** laufen beide gemeinsam.
+- „Szene | Szene“: zwei Szenen nebeneinander. Mit **Synchron** (zwei Pfeile) laufen beide gemeinsam.
 - „Nur Szene“: die Szene groß.
 - **„Verzögert“** unter dem Live-Bild: Der Spieler sieht sich 5 Sekunden später selbst.
 
@@ -124,7 +129,7 @@ Die Aufnahme läuft in jeder Ansicht weiter.
 
 - Szenen bleiben auf dem Tablet bzw. PC gespeichert, auch nach einem Neustart.
 - Behalten werden die letzten 150 Szenen, ältere werden automatisch gelöscht.
-- Szenen mit **★** werden nie automatisch gelöscht.
+- Szenen mit Stern (**„Behalten“**) werden nie automatisch gelöscht.
 - Am iPad die Seite über „Teilen → Zum Home-Bildschirm“ ablegen. Safari löscht sonst gespeicherte Szenen von Seiten, die eine Woche nicht benutzt wurden.
 
 ## Wenn etwas nicht geht
@@ -133,10 +138,10 @@ Die Aufnahme läuft in jeder Ansicht weiter.
 |---|---|
 | Tablet zeigt „Warte auf das Handy …“ | Sind beide im selben WLAN? Am Handy die Seite neu laden und „Kamera starten“ tippen. |
 | „Die Vermittlung ist nicht erreichbar“ | Hat das Gerät Internet? Über die Online-Adresse ist es zum Verbinden kurz nötig. |
-| „Zu viele Verbindungsversuche“ | Eine Minute warten, dann „↻ Neu verbinden“ tippen. |
+| „Zu viele Verbindungsversuche“ | Eine Minute warten, dann „Neu verbinden“ tippen. |
 | „Handy und Tablet finden sich nicht“ | Manche Gäste-WLANs lassen Geräte nicht miteinander reden. Dann das Tablet mit dem Hotspot des Handys verbinden. |
-| Am Handy steht „WLAN zu langsam!“ | Näher zusammenrücken oder ⚙ → Qualität auf 4 Mbit/s senken. |
-| Bild liegt auf der Seite | Am Tablet unter dem Live-Bild „⟳ Drehen“ tippen, bis es stimmt. |
+| Am Handy steht „WLAN zu langsam!“ | Näher zusammenrücken oder Einstellungen (Zahnrad) → Qualität auf 4 Mbit/s senken. |
+| Bild liegt auf der Seite | Am Tablet unter dem Live-Bild „Drehen“ tippen, bis es stimmt. |
 | Bild bleibt stehen | Ist das Handy gesperrt oder die Seite im Hintergrund? Seite wieder nach vorn holen. |
 | Zu viele Szenen | Mindestgröße erhöhen oder einen Bereich zeichnen. |
 | Szenen fehlen | Mindestgröße senken. |

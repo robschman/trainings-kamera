@@ -9,6 +9,7 @@ import { Detector, SceneTracker } from './detector.js';
 import { Link, newCode, formatCode } from './link.js';
 import { Player, SPEEDS } from './player.js';
 import { putClip, deleteClip, getClipData, allClips, prune } from './storage.js';
+import { ic } from './icons.js';
 import qrcode from '../vendor/qrcode.js';
 
 const $ = s => document.querySelector(s);
@@ -296,10 +297,13 @@ function setRec() {
   const lf = liveFrame();
   main.dataset.video = lf && lf.h > lf.w ? 'portrait' : 'landscape'; // Hochformat: Bilder nebeneinander statt übereinander
   r.className = 'pill' + (rec ? ' rec' : '');
-  r.textContent = rec ? `AUFNAHME · ${Math.round((buffer.latestTs - buffer.oldestTs) / 1e6)} s Puffer`
+  const secs = rec ? Math.round((buffer.latestTs - buffer.oldestTs) / 1e6) : 0;
+  const html = rec ? `AUFNAHME<span class="x"> · ${secs} s</span>`
     : starting ? 'Kamera startet …'
     : mode === 'phone' ? (link?.state === 'connected' ? 'Handy verbunden' : 'Warte auf Handy')
     : 'Kamera aus';
+  if (r.dataset.html !== html) { r.dataset.html = html; r.innerHTML = html; }
+  r.title = rec ? `Aufnahme läuft – die letzten ${secs} Sekunden sind zwischengespeichert` : '';
 }
 setInterval(setRec, 1000);
 
@@ -339,9 +343,8 @@ function updateDetState(r) {
   const ai = detector.aiStatus;
   if (!r) { d.textContent = ai; d.className = 'pill' + (detector.od ? ' ok' : ''); return; }
   const what = r.mode === 'person' ? 'Spieler' : 'Bewegung';
-  d.textContent = r.present ? `${what} erkannt` : (r.mode === 'person' ? ai : 'Bewegungsmodus');
-  d.className = 'pill' + (r.present ? ' hot' : detector.od ? ' ok' : '');
-  $('#sceneState').textContent = tracker.active ? '◉ Szene läuft …' : '';
+  d.textContent = tracker.active ? 'Szene läuft …' : r.present ? `${what} erkannt` : (r.mode === 'person' ? ai : 'Bewegungsmodus');
+  d.className = 'pill' + (tracker.active ? ' scene' : r.present ? ' hot' : detector.od ? ' ok' : '');
 }
 
 function snapshot() {
@@ -479,7 +482,7 @@ function setZoning(on) {
   livePane.classList.toggle('zoning', on);
   $('#zoneBtn').classList.toggle('on', on);
 }
-const updateZoneUi = () => { $('#zoneClear').hidden = !profile().zone; };
+const updateZoneUi = () => { const z = !!profile().zone; $('#zoneClear').hidden = !z; $('#zoneBtn').hidden = z; };
 $('#zoneBtn').onclick = () => {
   setZoning(!livePane.classList.contains('zoning'));
   if (livePane.classList.contains('zoning')) toast('Jetzt im Live-Bild einen Rahmen um den Spielbereich ziehen');
@@ -548,6 +551,7 @@ players.forEach(p => {
   p.addEventListener('sync', e => {
     if (syncOn && main.dataset.layout === 'clip-clip') players.find(x => x !== p).applySync(e.detail);
   });
+  p.addEventListener('hint', e => toast(e.detail));
   p.addEventListener('star', e => toggleStar(e.detail));
   p.addEventListener('export', e => exportClip(e.detail));
 });
@@ -578,9 +582,9 @@ function renderClips(newId) {
         <b>${fmtTime(c.createdAt)}</b>
         <span>${fmtSec(c.duration)} · <span class="tag ${c.source}">${c.source === 'manual' ? 'markiert' : 'auto'}</span></span>
         <div class="acts">
-          <button class="star ${c.starred ? 'on' : ''}" data-act="star" title="Stern (S)">${c.starred ? '★' : '☆'}</button>
-          <button data-act="export" title="Als Video speichern (E)">⬇</button>
-          <button data-act="del" title="Löschen (Entf)">🗑</button>
+          <button class="${c.starred ? 'set' : ''}" data-act="star" title="Mit Stern behalten (S)" aria-label="Behalten">${ic(c.starred ? 'star-on' : 'star')}</button>
+          <button data-act="export" title="Als Video speichern (E)" aria-label="Speichern">${ic('save')}</button>
+          <button data-act="del" title="Löschen (Entf)" aria-label="Löschen">${ic('trash')}</button>
         </div>
       </div>`;
     box.appendChild(el);
@@ -727,18 +731,20 @@ const PROFILE_KEYS = Object.keys(DEFAULT_PROFILE).filter(k => k !== 'zone');
 const APP_KEYS = ['resolution', 'fps', 'bitrate', 'delay', 'autoShow', 'autoSpeed', 'autoLoop', 'manualLen', 'maxClips'];
 const NUMERIC = ['fps', 'autoSpeed'];
 
+const profSels = document.querySelectorAll('.profsel'); // in der Kopfzeile und in den Einstellungen
 function renderProfiles() {
-  $('#profileSel').innerHTML = Object.keys(settings.profiles)
-    .map(n => `<option ${n === settings.profile ? 'selected' : ''}>${n}</option>`).join('');
+  const html = Object.keys(settings.profiles).map(n => `<option ${n === settings.profile ? 'selected' : ''}>${n}</option>`).join('');
+  profSels.forEach(sel => { sel.innerHTML = html; });
   $('#profName').textContent = settings.profile;
   updateZoneUi();
 }
-$('#profileSel').onchange = e => {
+profSels.forEach(sel => sel.onchange = e => {
   settings.profile = e.target.value;
   tracker.reset();
-  renderProfiles();
+  fillForm(); // Felder der Einstellungen auf das gewählte Profil umstellen
+  drawOverlay(detector.last, profile());
   toast('Profil: ' + settings.profile);
-};
+});
 
 function fillForm() {
   const p = profile();
@@ -876,5 +882,11 @@ if (params.get('report')) {
     ai: detector.aiStatus, restarts: encoder.restarts, encCodec: encoder.codec, clips: clips.map(c => ({ dur: +c.duration.toFixed(2), fps: +c.fps.toFixed(1) })),
     player: players[0].clip && { t: +players[0].video.currentTime.toFixed(2), dur: +(players[0].video.duration || 0).toFixed(2), w: players[0].video.videoWidth, paused: players[0].video.paused, err: players[0].video.error?.message },
     err: $('#pairErr').textContent + $('#startErr').textContent,
+    layout: (() => { // Maße der Oberfläche: Fensterbreite / Höhe der Leiste, Symbol sichtbar?
+      const w = e => Math.round(e.getBoundingClientRect().width), h = e => Math.round(e.getBoundingClientRect().height);
+      const rows = bar => new Set([...bar.querySelectorAll('button')].filter(b => b.getClientRects().length).map(b => Math.round(b.getBoundingClientRect().top / 10))).size;
+      return { vis: document.visibilityState, vp: [innerWidth, innerHeight], header: h($('header')), live: [w(livePane), h($('.lbar')), rows($('.lbar'))], p1: [w($('#p1')), h($('#p1 .pbar')), rows($('#p1 .pbar'))],
+        aside: [w($('aside')), h($('aside'))], icon: [w($('#p1 [data-a="play"] .ic')), w($('#p1 [data-a="play"] use'))], lbl: getComputedStyle($('#p1 .g-clip .lbl')).display, ovX: document.documentElement.scrollWidth - innerWidth };
+    })(),
   }) }).catch(() => {}), 2000);
 }
