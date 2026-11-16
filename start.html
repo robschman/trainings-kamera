@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trainings-Kamera – Geräte verbinden</title>
+  <link rel="icon" href="icons/icon-192.png">
+  <style>
+    body { margin: 0; background: #0e1116; color: #e8edf3; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; display: flex; justify-content: center; }
+    main { max-width: 760px; padding: 32px 20px; }
+    h1 { margin: 0 0 4px; } h2 { color: #ffb020; font-size: 18px; margin: 26px 0 6px; }
+    p { margin: 6px 0; color: #b9c3cf; } b { color: #e8edf3; }
+    .row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    canvas { width: 220px; height: 220px; border-radius: 12px; background: #fff; image-rendering: pixelated; flex: none; }
+    .url { font: 700 20px ui-monospace, Menlo, monospace; color: #fff; background: #1f2630; padding: 6px 12px; border-radius: 8px; display: inline-block; user-select: all; }
+    ol { padding-left: 22px; color: #b9c3cf; } li { margin: 6px 0; }
+    a.btn { display: inline-block; background: #1f2630; border: 1px solid #2b3440; color: #e8edf3; padding: 10px 16px; border-radius: 10px; text-decoration: none; }
+    .warn { border-left: 3px solid #ffb020; padding: 6px 12px; background: #161b22; border-radius: 0 8px 8px 0; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Trainings-Kamera</h1>
+  <p>Dieser Mac stellt die App gerade im Heimnetz bereit. Das Video läuft danach direkt vom Handy zum Tablet.</p>
+
+  <h2>1. Tablet verbinden</h2>
+  <div class="row">
+    <canvas id="qr" width="10" height="10"></canvas>
+    <div>
+      <p>Mit der Kamera-App des <b>Tablets</b> scannen – oder im Browser eintippen:</p>
+      <p><span class="url" id="url">…</span></p>
+      <p>Tablet und Handy müssen im <b>selben WLAN</b> sein wie dieser Mac.</p>
+    </div>
+  </div>
+  <p class="warn">Beim ersten Öffnen warnt Safari: „Diese Verbindung ist nicht privat“. Das ist hier in Ordnung, weil die Verbindung nur im eigenen WLAN bleibt: <b>Details einblenden → diese Website öffnen</b>. Dasselbe einmal am Handy.</p>
+
+  <h2>2. Handy verbinden</h2>
+  <ol>
+    <li>Am Tablet <b>„📱 Handy als Kamera“</b> tippen. Es erscheint ein zweiter QR-Code.</li>
+    <li>Diesen Code mit der Kamera-App des <b>Handys</b> scannen und den Link öffnen.</li>
+    <li>Am Handy <b>„Kamera starten“</b> tippen und den Kamera-Zugriff erlauben.</li>
+  </ol>
+
+  <h2>Oder direkt hier am Mac ansehen</h2>
+  <p><a class="btn" href="index.html">App an diesem Rechner öffnen</a></p>
+  <p id="err" style="color:#ff4d5e"></p>
+</main>
+<script type="module">
+  import qrcode from './vendor/qrcode.js';
+  const info = await fetch('api/info').then(r => r.json()).catch(() => ({}));
+  if (!info.lan) {
+    document.querySelector('#err').textContent = 'Der Zugriff aus dem Heimnetz ist nicht aktiv. Bitte die App über „Start-Mac“ starten und prüfen, ob der Mac im WLAN ist.';
+  } else {
+    document.querySelector('#url').textContent = info.lan.replace(/\/$/, '');
+    const q = qrcode(0, 'M'); q.addData(info.lan); q.make();
+    const c = document.querySelector('#qr'), n = q.getModuleCount(), cell = 6, pad = 3;
+    c.width = c.height = (n + pad * 2) * cell;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#000';
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) g.fillRect((x + pad) * cell, (y + pad) * cell, cell, cell);
+  }
+</script>
+</body>
+</html>
