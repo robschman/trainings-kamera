@@ -21,8 +21,7 @@ Es gibt zwei Wege:
 
 ### In der Halle: über die Online-Adresse
 
-1. Am **Tablet** in Safari öffnen: **`robschman.github.io/trainings-kamera`**
-   Die Adresse springt auf `beautyroutine.app/trainings-kamera` um. Das ist richtig so.
+1. Am **Tablet** in Safari öffnen: **`superkamera.schrittfuerschrittfit.at`**
 2. **„📱 Handy als Kamera“** tippen. Es erscheint ein QR-Code.
 3. Den Code mit der Kamera-App des **Handys** scannen und den Link öffnen.
 4. Am Handy **„Kamera starten“** tippen und den Kamera-Zugriff erlauben.

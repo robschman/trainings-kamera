@@ -2,7 +2,7 @@
 
 Das Handy filmt, das Tablet zeigt die Szenen: Sobald ein Spieler ins Bild kommt, schneidet die App die Szene aus und spielt sie sofort in Zeitlupe ab.
 
-**Öffnen:** https://robschman.github.io/trainings-kamera/ (leitet auf https://beautyroutine.app/trainings-kamera/ weiter)
+**Öffnen:** https://superkamera.schrittfuerschrittfit.at/
 
 - Am Tablet die Adresse öffnen und „Handy als Kamera“ wählen.
 - Den QR-Code mit dem Handy scannen und „Kamera starten“ tippen.

@@ -89,8 +89,7 @@ story = [
     steps([
         'Handy und Tablet ins <b>selbe WLAN</b> bringen. Kein WLAN in der Halle? Am Handy den <b>Hotspot</b> '
         'einschalten und das Tablet damit verbinden.',
-        'Am <b>Tablet</b> in Safari diese Adresse öffnen:<br/><font size="13"><b>robschman.github.io/trainings-kamera</b></font><br/>'
-        '<font color="#5D6B7A">Die Adresse springt auf beautyroutine.app/trainings-kamera um. Das ist richtig so.</font>',
+        'Am <b>Tablet</b> in Safari diese Adresse öffnen:<br/><font size="13"><b>superkamera.schrittfuerschrittfit.at</b></font>',
         'Am Tablet <b>„Handy als Kamera“</b> tippen. Es erscheint ein QR-Code.',
         'Den Code mit der Kamera-App des <b>Handys</b> scannen und den Link öffnen.',
         'Am Handy <b>„Kamera starten“</b> tippen und den Kamera-Zugriff erlauben. Nach ein paar Sekunden erscheint '
