@@ -3,6 +3,7 @@
 
 export class StreamView {
   lastTs = 0;     // Zeitstempel des zuletzt gezeigten Bildes
+  rotation = 0;   // Bild im Uhrzeigersinn drehen: 0, 90, 180 oder 270 Grad
   onFrame = null; // wird nach jedem gezeigten Bild aufgerufen
   onError = null;
   #errors = 0;
@@ -41,9 +42,15 @@ export class StreamView {
     const dec = new VideoDecoder({
       output: f => {
         if (dec !== this.dec) { f.close(); return; }
-        const c = this.canvas;
-        if (c.width !== f.displayWidth || c.height !== f.displayHeight) { c.width = f.displayWidth; c.height = f.displayHeight; }
-        this.ctx.drawImage(f, 0, 0);
+        const c = this.canvas, g = this.ctx, r = this.rotation;
+        const fw = f.displayWidth, fh = f.displayHeight;
+        const w = r % 180 ? fh : fw, h = r % 180 ? fw : fh;
+        if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+        if (r) {
+          g.save(); g.translate(w / 2, h / 2); g.rotate(r * Math.PI / 180);
+          g.drawImage(f, -fw / 2, -fh / 2);
+          g.restore();
+        } else g.drawImage(f, 0, 0);
         this.lastTs = f.timestamp;
         f.close();
         this.#errors = 0;

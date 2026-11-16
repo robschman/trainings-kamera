@@ -11,6 +11,7 @@ export class ClipBuffer extends EventTarget {
   config = null;   // {codec, width, height, description}
   gen = 0;         // erhöht sich bei jedem neuen Stream (Kamera neu gestartet, Handy gedreht …)
   seconds = 90;
+  rotation = 0;    // Szenen so gedreht speichern (0, 90, 180, 270 Grad im Uhrzeigersinn)
   #skew = null;    // kleinster beobachteter Abstand eigene Uhr − Kamera-Uhr
 
   // Neue Stream-Einstellung übernehmen. Ist sie gleich der alten (Encoder nur neu gestartet),
@@ -85,7 +86,7 @@ export class ClipBuffer extends EventTarget {
     const vp9 = cfg.codec.startsWith('vp09');
     const muxer = new Muxer({
       target: new ArrayBufferTarget(),
-      video: { codec: vp9 ? 'vp9' : 'avc', width: cfg.width, height: cfg.height },
+      video: { codec: vp9 ? 'vp9' : 'avc', width: cfg.width, height: cfg.height, rotation: this.rotation },
       fastStart: 'in-memory',
       firstTimestampBehavior: 'offset',
     });
@@ -104,7 +105,7 @@ export class ClipBuffer extends EventTarget {
       data: muxer.target.buffer,
       start: list[s].ts, end: list[e].ts,
       duration: seconds, fps,
-      width: cfg.width, height: cfg.height,
+      width: this.rotation % 180 ? cfg.height : cfg.width, height: this.rotation % 180 ? cfg.width : cfg.height,
     };
   }
 }

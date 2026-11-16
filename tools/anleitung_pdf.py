@@ -104,12 +104,15 @@ story = [
 
     Paragraph('Das Handy aufstellen', h2),
     *bullets([
-        '<b>Quer</b> halten und fest aufstellen (Stativ), etwa 1–2 Meter vom Spieler entfernt.',
+        'Fest aufstellen (Stativ), etwa 1–2 Meter vom Spieler entfernt. <b>Hochkant oder quer</b>: So wie das Handy '
+        'steht, wird gefilmt. Hochkant passt für die Schlagbewegung, quer für den Anlauf.',
+        'Liegt das Bild am Tablet auf der Seite: dort unter dem Live-Bild <b>„Drehen“</b> tippen.',
         'Die Seite muss <b>offen und im Vordergrund</b> bleiben. Wird das Handy gesperrt, stoppt die Kamera. '
         'Der Bildschirm bleibt von selbst an.',
         'Ans <b>Ladegerät oder eine Powerbank</b> hängen – Filmen und Senden brauchen viel Strom.',
         '<b>„Abdunkeln“</b> macht den Bildschirm fast schwarz und spart Akku. Die Kamera läuft weiter.',
         'Die <b>Linse</b> (z. B. Weitwinkel) wählt man am Handy unten links oder am Tablet in den Einstellungen.',
+        '<b>„Beenden“</b> am Handy schaltet die Kamera aus. Die Seite einfach zu schließen geht genauso.',
     ]),
     Spacer(1, 6),
     box('<b>Verbindung weg?</b> Das Tablet zeigt wieder den QR-Code und wartet. Sobald das Handy die Seite wieder '
@@ -153,6 +156,7 @@ story = [
         ('„Vermittlung nicht erreichbar“', 'Hat das Gerät Internet? Zum Verbinden ist es kurz nötig.'),
         ('Geräte finden sich nicht', 'Manche Gäste-WLANs trennen die Geräte. Dann das Tablet mit dem Hotspot des Handys verbinden.'),
         ('„WLAN zu langsam!“', 'Näher zusammenrücken oder in den Einstellungen die Qualität auf 4 Mbit/s senken.'),
+        ('Bild liegt auf der Seite', 'Am Tablet unter dem Live-Bild „Drehen“ tippen, bis es stimmt.'),
         ('Bild bleibt stehen', 'Handy gesperrt oder Seite im Hintergrund? Seite wieder nach vorn holen.'),
         ('Zu viele Szenen', 'Mindestgröße <b>erhöhen</b> oder einen Bereich zeichnen.'),
         ('Szenen fehlen', 'Mindestgröße <b>senken</b>.'),

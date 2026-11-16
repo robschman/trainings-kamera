@@ -20,6 +20,7 @@ export const DEFAULTS = {
   code: '',              // Kopplungs-Code fürs Handy
   relay: '',             // eigene Vermittlungs-Adresse (leer = automatisch)
   phoneCam: '',          // gewählte Kamera/Linse am Handy
+  rotate: 0,             // Bild vom Handy drehen (0, 90, 180, 270 Grad), falls es auf der Seite liegt
   deviceId: '',
   resolution: '720',     // '720' | '1080'
   fps: 60,

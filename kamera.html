@@ -54,12 +54,12 @@
     #codeInput { font: 700 26px ui-monospace, Menlo, monospace; letter-spacing: 3px; text-align: center; width: 260px; text-transform: uppercase; }
     .hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 10px 16px; border-radius: 12px;
       background: rgba(0,0,0,.65); font-weight: 600; text-align: center; pointer-events: none; }
+    button.stop { border-color: var(--red); color: #ffd9dd; }
     .dim { position: absolute; inset: 0; background: rgba(0,0,0,.94); display: flex; align-items: center; justify-content: center; color: #555; text-align: center; padding: 20px; }
   </style>
 </head>
 <body>
   <video id="cam" muted playsinline autoplay></video>
-  <div class="hint" id="rotateHint" hidden>↻ Handy quer halten</div>
 
   <div class="top">
     <span class="pill wait" id="state">Bereit</span>
@@ -70,6 +70,7 @@
     <select id="camSel" title="Kamera / Linse wählen"></select>
     <span class="grow"></span>
     <button id="dimBtn" title="Bildschirm abdunkeln (spart Akku)">🌙 Abdunkeln</button>
+    <button id="stopBtn" class="stop" title="Kamera ausschalten und Übertragung beenden">■ Beenden</button>
   </div>
 
   <div class="dim" id="dim" hidden>Kamera läuft und sendet.<br>Tippen, um das Bild wieder zu zeigen.</div>
@@ -82,7 +83,8 @@
     </div>
     <p id="codeShown" hidden>Verbunden mit Code <b id="codeText"></b> · <a href="#" id="codeChange" style="color:#9aa7b6">ändern</a></p>
     <button class="primary" id="startBtn">▶ Kamera starten</button>
-    <p>Handy fest aufstellen, am besten quer. Die Seite muss offen und im Vordergrund bleiben.</p>
+    <p id="stopNote" hidden><b>Übertragung beendet.</b> Die Kamera ist aus.</p>
+    <p>Handy fest aufstellen – <b>hochkant oder quer</b>, so wie es steht, wird gefilmt. Die Seite muss offen und im Vordergrund bleiben.</p>
     <p class="error" id="err"></p>
   </div>
 

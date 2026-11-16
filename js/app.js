@@ -32,6 +32,14 @@ let mode = null;       // 'phone' | 'local' | 'file'
 let stream = null;     // lokale Kamera
 let link = null;       // Verbindung zum Handy
 let phone = null;      // letzte Statusmeldung vom Handy
+let phoneBye = false;  // true = die Übertragung wurde am Handy mit Absicht beendet
+const BYE = 'Die Übertragung wurde am Handy beendet. Zum Weitermachen dort „Kamera starten“ tippen.';
+
+// Bild vom Handy drehen (nur bei "Handy als Kamera"): Live-Bild, verzögertes Bild und gespeicherte Szenen
+function applyRotation() {
+  const r = mode === 'phone' ? (settings.rotate || 0) : 0;
+  liveView.rotation = delayView.rotation = buffer.rotation = r;
+}
 let delayOn = false;
 
 // ---------- Hilfen ----------
@@ -75,6 +83,7 @@ function stopSource() {
   detector.stop();
   buffer.reset(null);
   mode = null;
+  applyRotation();
   livePane.classList.remove('remote');
   $('#camInfo').textContent = '';
   setRec();
@@ -172,6 +181,8 @@ async function startFile(blob) {
 function startPhone() {
   stopSource();
   mode = 'phone';
+  phoneBye = false;
+  applyRotation();
   settings.source = 'phone';
   if (!settings.code) settings.code = params.get('code') || newCode();
   livePane.classList.add('remote');
@@ -182,17 +193,17 @@ function startPhone() {
     if (l !== link) return;
     if (l.state === 'connecting') $('#pairState').textContent = 'Handy gefunden – verbinde …';
     else if (l.state === 'connected') { $('#pairState').textContent = 'Verbunden – warte auf das Bild …'; $('#pairErr').textContent = ''; }
-    else if (l.state === 'waiting') $('#pairState').textContent = 'Warte auf das Handy …';
+    else if (l.state === 'waiting') $('#pairState').textContent = phoneBye ? BYE : 'Warte auf das Handy …';
     setRec();
   });
-  l.addEventListener('open', () => { buffer.reset(null); l.sendJSON(camWish()); }); // neues Handy / neu verbunden: frischer Speicher
+  l.addEventListener('open', () => { phoneBye = false; buffer.reset(null); l.sendJSON(camWish()); }); // neues Handy / neu verbunden: frischer Speicher
   l.addEventListener('close', () => {
     if (l !== link) return;
     tracker.flush(profile());
     liveView.stop();
     detector.stop();
-    showPair('Verbindung zum Handy unterbrochen. Warte …');
-    toast('Verbindung zum Handy unterbrochen');
+    showPair(phoneBye ? BYE : 'Verbindung zum Handy unterbrochen. Warte …');
+    if (!phoneBye) toast('Verbindung zum Handy unterbrochen');
   });
   l.addEventListener('error', e => { if (l === link) $('#pairErr').textContent = e.detail?.message || String(e.detail); });
   l.addEventListener('chunk', e => { if (l === link) buffer.push(e.detail); });
@@ -223,6 +234,12 @@ async function onPhoneMessage(m) {
   } else if (m.t === 'info') {
     phone = m;
     $('#camInfo').textContent = `📱 ${m.label || 'Handy'} · ${m.width}×${m.height} · ${m.fps} fps` + (m.dropped ? ' · Funk langsam!' : '');
+  } else if (m.t === 'bye') {
+    phoneBye = true;
+    tracker.flush(profile());
+    liveView.stop();
+    detector.stop();
+    showPair(BYE);
   } else if (m.t === 'error') {
     showPair('Das Handy meldet ein Problem');
     $('#pairErr').textContent = m.message;
@@ -275,6 +292,9 @@ function setRec() {
   const rec = mode && buffer.chunks.length && buffer.now() - buffer.latestTs < 2e6;
   const starting = (mode === 'local' || mode === 'file') && !rec;
   $('#liveHint').hidden = !starting || !$('#startBox').hidden;
+  $('#rotBtn').hidden = !(mode === 'phone' && link?.state === 'connected');
+  const lf = liveFrame();
+  main.dataset.video = lf && lf.h > lf.w ? 'portrait' : 'landscape'; // Hochformat: Bilder nebeneinander statt übereinander
   r.className = 'pill' + (rec ? ' rec' : '');
   r.textContent = rec ? `AUFNAHME · ${Math.round((buffer.latestTs - buffer.oldestTs) / 1e6)} s Puffer`
     : starting ? 'Kamera startet …'
@@ -385,6 +405,11 @@ function markScene() {
   cutWhenReady(now - settings.manualLen * 1e6, now + 0.8e6, 'manual', snapshot());
 }
 $('#markBtn').onclick = markScene;
+$('#rotBtn').onclick = () => {
+  settings.rotate = ((settings.rotate || 0) + 90) % 360;
+  applyRotation();
+  toast(settings.rotate ? `Bild um ${settings.rotate}° gedreht – neue Szenen werden so gespeichert` : 'Bild wieder ungedreht');
+};
 
 // ---------- Overlay: Erkennung + Bereich ----------
 function videoRect() {
@@ -801,6 +826,7 @@ $('#profDel').onclick = () => {
 (async function init() {
   if (params.get('profile') && settings.profiles[params.get('profile')]) settings.profile = params.get('profile');
   if (params.get('code')) settings.code = params.get('code');
+  if (params.get('rot')) settings.rotate = +params.get('rot') || 0; // nur für Tests
   renderProfiles();
   setLayout(settings.layout || 'live-clip');
   setDelay(false);

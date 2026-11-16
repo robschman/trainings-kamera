@@ -46,11 +46,14 @@ Der Mac wird nur zum Öffnen der Seiten gebraucht. Das Video läuft direkt vom H
 
 ### Das Handy aufstellen
 
-- **Quer** halten und fest aufstellen (Stativ), etwa 1–2 Meter vom Spieler entfernt.
+- Fest aufstellen (Stativ), etwa 1–2 Meter vom Spieler entfernt.
+- **Hochkant oder quer:** So wie das Handy steht, wird gefilmt. Hochkant passt für die Schlagbewegung aus der Nähe, quer für den Anlauf. Das Handy kann auch im laufenden Betrieb gedreht werden.
+- Liegt das Bild am Tablet auf der Seite, dort unter dem Live-Bild **„⟳ Drehen“** tippen. Das passiert, wenn am iPhone die Ausrichtungssperre eingeschaltet ist und das Handy quer steht.
 - Die Seite muss **offen und im Vordergrund** bleiben. Wird das Handy gesperrt oder die App gewechselt, stoppt die Kamera. Der Bildschirm bleibt von selbst an.
 - **Ans Ladegerät oder eine Powerbank** hängen, Filmen und Senden brauchen viel Strom.
 - **„🌙 Abdunkeln“** macht den Bildschirm fast schwarz und spart Akku. Die Kamera läuft weiter.
 - Die **Linse** (z. B. Weitwinkel) lässt sich am Handy unten links wählen oder am Tablet unter ⚙ → „Kamera am Handy“.
+- **„■ Beenden“** am Handy schaltet die Kamera aus und beendet die Übertragung. Die Seite einfach zu schließen geht genauso. Zum Weitermachen wieder „Kamera starten“ tippen.
 
 ### Wenn die Verbindung abbricht
 
@@ -133,6 +136,7 @@ Die Aufnahme läuft in jeder Ansicht weiter.
 | „Zu viele Verbindungsversuche“ | Eine Minute warten, dann „↻ Neu verbinden“ tippen. |
 | „Handy und Tablet finden sich nicht“ | Manche Gäste-WLANs lassen Geräte nicht miteinander reden. Dann das Tablet mit dem Hotspot des Handys verbinden. |
 | Am Handy steht „WLAN zu langsam!“ | Näher zusammenrücken oder ⚙ → Qualität auf 4 Mbit/s senken. |
+| Bild liegt auf der Seite | Am Tablet unter dem Live-Bild „⟳ Drehen“ tippen, bis es stimmt. |
 | Bild bleibt stehen | Ist das Handy gesperrt oder die Seite im Hintergrund? Seite wieder nach vorn holen. |
 | Zu viele Szenen | Mindestgröße erhöhen oder einen Bereich zeichnen. |
 | Szenen fehlen | Mindestgröße senken. |

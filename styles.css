@@ -298,3 +298,10 @@ fieldset button { white-space: normal; }
 .pair canvas { position: static; inset: auto; }
 /* Solange eine Kamera gewählt oder das Handy gekoppelt wird, bekommt die linke Hälfte mehr Platz */
 main[data-layout="live-clip"] #livePane:has(.start:not([hidden])) { flex: 4; }
+
+/* Hochformat-Bild vom Handy: Live-Bild und Szene nebeneinander lassen, auch wenn das Tablet hochkant steht */
+@media (orientation: portrait) and (min-width: 600px) {
+  main[data-video="portrait"] .panes { flex-direction: row; }
+}
+/* Vorschaubilder ganz zeigen (bei Hochformat sonst ohne Kopf und Füße) */
+.clip img { object-fit: contain; }

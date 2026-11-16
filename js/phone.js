@@ -148,9 +148,9 @@ function sendInfo() {
   const slow = dropped > lastDropped;
   lastDropped = dropped;
   if (running && encoder.width) {
-    $('#info').textContent = `${encoder.width}×${encoder.height}` + (link?.state === 'connected' ? ` · ${shownFps} fps` : '') + (slow ? ' · WLAN zu langsam!' : '');
+    const format = encoder.height > encoder.width ? 'Hochformat' : 'Querformat';
+    $('#info').textContent = `${format} · ${encoder.width}×${encoder.height}` + (link?.state === 'connected' ? ` · ${shownFps} fps` : '') + (slow ? ' · WLAN zu langsam!' : '');
   }
-  $('#rotateHint').hidden = !(running && innerHeight > innerWidth * 1.1);
   link?.sendJSON({
     t: 'info', label: stream ? trackInfo(stream).label : 'Testvideo', deviceId: stream ? trackInfo(stream).deviceId : '',
     width: encoder.width, height: encoder.height, fps: shownFps, cams, dropped: slow,
@@ -174,6 +174,7 @@ async function start() {
     return;
   }
   running = true;
+  $('#stopNote').hidden = true;
   $('#cover').hidden = true;
   $('#bottom').hidden = false;
   connect();
@@ -189,6 +190,27 @@ $('#camSel').onchange = e => {
   openCam().catch(showError);
 };
 $('#dimBtn').onclick = () => { $('#dim').hidden = false; };
+
+// Übertragung beenden: Kamera aus, Verbindung zu, zurück zum Startbild
+function stop() {
+  if (!running) return;
+  running = false;
+  clearTimeout(reopenTimer);
+  link?.sendJSON({ t: 'bye' }); // das Tablet soll wissen, dass das Absicht war
+  encoder.stop();
+  stopStream(stream); stream = null;
+  cam.pause(); cam.srcObject = null; cam.removeAttribute('src');
+  const l = link; link = null;
+  setTimeout(() => l?.stop(), 300); // kurz warten, damit die Abmeldung noch hinausgeht
+  wake?.release().catch(() => {});
+  $('#dim').hidden = true;
+  $('#bottom').hidden = true;
+  $('#cover').hidden = false;
+  $('#stopNote').hidden = false;
+  $('#info').textContent = '';
+  setState('Beendet', 'wait');
+}
+$('#stopBtn').onclick = stop;
 $('#dim').onclick = () => { $('#dim').hidden = true; };
 
 // Bildschirm anlassen – sonst stoppt das Handy die Kamera
@@ -209,7 +231,7 @@ document.addEventListener('visibilitychange', () => {
 if (params.get('auto')) start();
 
 // zum Testen
-window.__phone = { encoder, get link() { return link; }, get wish() { return wish; } };
+window.__phone = { encoder, get link() { return link; }, get wish() { return wish; }, get running() { return running; } };
 if (params.get('report')) {
   // Test-Tab beendet sich selbst
   setTimeout(() => { running = false; encoder.stop(); link?.stop(); cam.pause(); document.body.innerHTML = '<p style="padding:40px;font-size:20px;color:#fff">Test beendet – dieser Tab kann geschlossen werden.</p>'; }, 75000);
