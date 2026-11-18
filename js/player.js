@@ -1,4 +1,4 @@
-// Szenen-Player: Tempo-Stufen, Einzelbild, Wischen/Ziehen zum Spulen, A–B-Schleife, Zoom.
+// Szenen-Player: Tempo-Stufen, Einzelbild, Spulen (Regler unter dem Bild oder Wischen im Bild), A–B-Schleife, Zoom.
 // Bedienbar mit Finger (Tablet) und mit Maus + Tastatur (PC).
 
 import { ic, setIcon } from './icons.js';
@@ -13,6 +13,8 @@ export class Player extends EventTarget {
   loopA = null; loopB = null;
   zoom = 1; zx = 0.5; zy = 0.5;
   lastInteraction = 0;
+  want = null;   // Stelle, die als Nächstes angesprungen wird (siehe #seek)
+  seekAt = 0;
 
   constructor(root, name) {
     super();
@@ -34,7 +36,9 @@ export class Player extends EventTarget {
         <div class="scrubhint">◀ wischen ▶</div>
       </div>
       <div class="trow">
-        <div class="timeline"><div class="loop"></div><div class="played"></div><div class="head"></div></div>
+        <div class="timeline" role="slider" aria-label="Stelle in der Szene – zum Spulen ziehen" title="Zum Spulen ziehen">
+          <div class="rail"><div class="loop"></div><div class="played"></div><div class="head"></div></div>
+        </div>
         <span class="time">–</span>
       </div>
       <div class="controls pbar">
@@ -62,6 +66,7 @@ export class Player extends EventTarget {
     this.video = root.querySelector('video');
     this.stage = root.querySelector('.stage');
     this.tl = root.querySelector('.timeline');
+    this.rail = root.querySelector('.rail');
     this.$ = sel => root.querySelector(sel);
     this.chip = root.querySelector('.zoomchip');
     this.chip.addEventListener('click', () => { this.touch(); this.resetZoom(); });
@@ -81,14 +86,19 @@ export class Player extends EventTarget {
     v.addEventListener('pause', () => this.#updateUI());
     v.addEventListener('loadedmetadata', () => { v.playbackRate = this.speed; this.#updateUI(); });
     const tick = () => {
-      if (this.loopB != null && v.currentTime >= this.loopB) v.currentTime = this.loopA ?? 0;
+      // nur beim Abspielen: beim Spulen von Hand darf man auch hinter das Schleifen-Ende
+      if (!v.paused && this.loopB != null && v.currentTime >= this.loopB) v.currentTime = this.loopA ?? 0;
       this.#updateTime();
       v.requestVideoFrameCallback(tick);
     };
     v.requestVideoFrameCallback(tick);
-    v.addEventListener('seeked', () => this.#updateTime());
+    v.addEventListener('seeked', () => { if (this.want != null) this.#seek(this.want); this.#updateTime(); });
     v.addEventListener('timeupdate', () => this.#updateTime());
-    v.addEventListener('ended', () => { if (this.loop || this.loopA != null) { v.currentTime = this.loopA ?? 0; v.play().catch(() => {}); } });
+    v.addEventListener('ended', () => {
+      // Wer gerade von Hand ans Ende gespult hat, will dort stehen bleiben – nicht von vorn loslaufen
+      if (performance.now() - this.seekAt < 400) return;
+      if (this.loop || this.loopA != null) { v.currentTime = this.loopA ?? 0; v.play().catch(() => {}); }
+    });
     this.setSpeed(1);
   }
 
@@ -99,6 +109,7 @@ export class Player extends EventTarget {
   load(clip, blob, { speed, play = true, loop = true } = {}) {
     if (this.url) URL.revokeObjectURL(this.url);
     this.clip = clip;
+    this.#dropSeek();
     this.loop = loop;
     this.loopA = this.loopB = null;
     this.url = URL.createObjectURL(blob);
@@ -115,6 +126,7 @@ export class Player extends EventTarget {
     if (this.url) URL.revokeObjectURL(this.url);
     this.url = null;
     this.clip = null;
+    this.#dropSeek();
     this.video.removeAttribute('src');
     this.video.load();
     this.root.classList.remove('has-clip');
@@ -149,6 +161,7 @@ export class Player extends EventTarget {
         this.loopA ??= 0;
         if (this.loopB - this.loopA < 0.05) { this.loopA = this.loopB = null; break; } // ganz am Anfang: keine Schleife möglich
         // gleich zeigen, was die Schleife macht
+        this.#dropSeek();
         v.currentTime = this.loopA;
         v.play().catch(() => {});
         if (broadcast) this.#hint(this.#loopText());
@@ -168,16 +181,38 @@ export class Player extends EventTarget {
     const v = this.video;
     if (!this.clip) return;
     v.pause();
-    v.currentTime = Math.min(Math.max(0, v.currentTime + n / this.fps), v.duration || 0);
+    this.#seek(this.#pos + n / this.fps);
     if (broadcast) this.#emit('step', n);
   }
 
   seekBy(sec, broadcast) {
-    const v = this.video;
     if (!this.clip) return;
-    v.currentTime = Math.min(Math.max(0, v.currentTime + sec), v.duration || 0);
+    this.#seek(this.#pos + sec);
     if (broadcast) this.#emit('seekBy', sec);
   }
+
+  // Stelle, an der die Szene steht oder gleich stehen wird
+  get #pos() { return this.want ?? this.video.currentTime; }
+
+  // An eine Stelle springen. Der Browser bekommt immer nur einen Sprung auf einmal; kommt währenddessen ein neuer
+  // Wunsch, wird nur der jüngste gemerkt und danach ausgeführt. Sonst bräche beim Spulen mit dem Finger jeder
+  // Schritt den vorigen ab und das Bild bliebe stehen, bis der Finger ruht.
+  #seek(t) {
+    const v = this.video;
+    t = Math.min(Math.max(0, t), v.duration || 0);
+    clearTimeout(this.seekTimer);
+    if (v.seeking && performance.now() - this.seekAt < 400) {
+      this.want = t;
+      // Sicherheitsnetz, falls der Browser das Ende des laufenden Sprungs nie meldet
+      this.seekTimer = setTimeout(() => { if (this.clip && this.want != null) this.#seek(this.want); }, 400);
+      return;
+    }
+    this.want = null;
+    this.seekAt = performance.now();
+    v.currentTime = t;
+  }
+
+  #dropSeek() { clearTimeout(this.seekTimer); this.want = null; }
 
   resetZoom() { this.zoom = 1; this.#applyZoom(); }
 
@@ -220,7 +255,7 @@ export class Player extends EventTarget {
         st.classList.remove('scrubbing');
         drag = null;
       } else if (pts.size === 1) {
-        drag = { x: e.clientX, t: v.currentTime, moved: false };
+        drag = { x: e.clientX, t: this.#pos, moved: false };
       }
     });
     st.addEventListener('pointermove', e => {
@@ -238,8 +273,8 @@ export class Player extends EventTarget {
       // Ganze Bildbreite = 3 Sekunden: feines Spulen
       const span = Math.min(3, v.duration || 3);
       const target = Math.min(Math.max(0, drag.t + dx / st.clientWidth * span), v.duration || 0);
-      const d = target - v.currentTime;
-      v.currentTime = target;
+      const d = target - this.#pos;
+      this.#seek(target);
       this.#emit('seekBy', d);
     });
     const end = e => {
@@ -270,30 +305,40 @@ export class Player extends EventTarget {
     }, { passive: false });
   }
 
+  // Regler unter dem Bild: Griff mit Finger oder Maus an die gewünschte Stelle ziehen, beliebig oft vor und zurück
   #bindTimeline() {
     const tl = this.tl, v = this.video;
+    let active = null; // Finger oder Maus, die gerade zieht
     const seek = e => {
-      const r = tl.getBoundingClientRect();
+      if (e.pointerId !== active) return;
+      const r = this.rail.getBoundingClientRect();
       const t = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * (v.duration || 0);
-      const d = t - v.currentTime;
-      v.currentTime = t;
+      const d = t - this.#pos;
+      this.#seek(t);
       this.#emit('seekBy', d);
+      this.#updateTime(); // der Griff bleibt unter dem Finger, auch wenn das Bild einen Moment braucht
+    };
+    const stop = e => {
+      if (e.pointerId !== active) return;
+      active = null;
+      tl.classList.remove('drag');
     };
     tl.addEventListener('pointerdown', e => {
-      if (!this.clip) return;
+      if (!this.clip || active != null || (e.pointerType === 'mouse' && e.button !== 0)) return;
       this.touch();
       v.pause();
-      tl.setPointerCapture(e.pointerId);
+      active = e.pointerId;
+      try { tl.setPointerCapture(e.pointerId); } catch {} // der Finger darf beim Ziehen auch aus der Leiste rutschen
+      tl.classList.add('drag');
       seek(e);
-      const stop = () => { tl.removeEventListener('pointermove', seek); tl.removeEventListener('pointerup', stop); tl.removeEventListener('pointercancel', stop); };
-      tl.addEventListener('pointermove', seek);
-      tl.addEventListener('pointerup', stop);
-      tl.addEventListener('pointercancel', stop);
     });
+    tl.addEventListener('pointermove', seek);
+    tl.addEventListener('pointerup', stop);
+    tl.addEventListener('pointercancel', stop);
   }
 
   #updateTime() {
-    const v = this.video, d = v.duration || 0, t = v.currentTime;
+    const v = this.video, d = v.duration || 0, t = this.#pos;
     this.$('.time').textContent = this.clip ? `${fmt(t)} / ${fmt(d)} s` : '–';
     const p = d ? t / d * 100 : 0;
     this.$('.played').style.width = p + '%';

@@ -76,8 +76,10 @@ Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …�
 ## Erkennung einstellen (Volleyball in der Halle)
 
 - **Grüner Rahmen „Spieler“**: Diese Person löst eine Szene aus.
-- **Grauer Rahmen „zu weit weg“**: Leute im Hintergrund werden ignoriert.
-- Der **gelbe Balken** links im Live-Bild zeigt die Mindestgröße. Ändern: Einstellungen (Zahnrad) → „Mindestgröße der Person“ (Standard: 40 % der Bildhöhe).
+- **Grauer Rahmen „zu weit weg“**: Wer weiter hinten steht, wird ignoriert.
+- An jedem Rahmen steht, **wie groß** die Person im Bild ist (in Prozent). Eine Szene löst nur aus, wer die **Mindestgröße** erreicht (Standard: 40 %). Der **gelbe Balken** links im Live-Bild zeigt, wie hoch ein Rahmen dafür sein muss. Der Wert gilt hochkant und quer gleich.
+- Ändern: Einstellungen (Zahnrad) → „Mindestgröße der Person“.
+- **Beispiel:** Das Handy steht 1–2 Meter neben dem Netz. Der Angreifer läuft in 2–3 Metern vorbei und soll auslösen, die Aufspielerin steht 5–6 Meter weiter hinten und soll nicht auslösen. Probe vor dem Training: beide an ihren Platz stellen. Ist der Rahmen der Aufspielerin grün, die Mindestgröße erhöhen, bis er grau wird. Ist der Rahmen des Angreifers grau, die Mindestgröße senken. Ein Wert zwischen den beiden Zahlen an den Rahmen passt.
 - **„Bereich“**: mit dem Finger oder der Maus einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht. **„Bereich löschen“** entfernt den Rahmen.
 - Für andere Sportarten: Einstellungen (Zahnrad oben rechts) → „+ Neues Profil“. Umschalten lässt sich dort unter „Profil“; auf breiten Bildschirmen auch oben in der Kopfzeile.
 
@@ -88,7 +90,8 @@ Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …�
 | Geste | Wirkung |
 |---|---|
 | Ins Bild tippen | Abspielen / Pause |
-| Über das Bild wischen | Vor- und zurückspulen |
+| Regler unter dem Bild ziehen | Die Szene von Hand vor- und zurückschieben, so oft man will |
+| Über das Bild wischen | Fein vor- und zurückspulen (ganze Bildbreite = 3 Sekunden) |
 | Knöpfe links und rechts von ▶ | Ein Bild zurück / vor |
 | 0,1× bis 2× | Tempo (0,25× = vierfache Zeitlupe) |
 | Doppelt tippen, zwei Finger spreizen | Hineinzoomen (Ball, Hand, Fuß). „Zoom … ✕“ oben links im Bild stellt zurück |
@@ -106,7 +109,7 @@ Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen s
 | Leertaste / Klick ins Bild | Abspielen / Pause |
 | ← → / Mausrad | Ein Bild zurück / vor |
 | Shift + ← → | Eine Sekunde zurück / vor |
-| Maus gedrückt ziehen | Vor- und zurückspulen |
+| Maus gedrückt ziehen | Vor- und zurückspulen (im Bild oder am Regler darunter) |
 | 1 – 5 | Tempo 0,1× · 0,25× · 0,5× · 1× · 2× |
 | A / B / L | Schleife: von / bis / aufheben |
 | Doppelklick, Strg + Mausrad | Hineinzoomen (Z = zurück) |

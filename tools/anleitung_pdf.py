@@ -127,9 +127,11 @@ story = [
     Paragraph('Im Live-Bild sieht man, was die App erkennt:', body), Spacer(1, 4),
     *bullets([
         '<font color="#1F9D5B"><b>Grüner Rahmen „Spieler“</b></font> – diese Person löst eine Szene aus.',
-        '<font color="#5D6B7A"><b>Grauer Rahmen „zu weit weg“</b></font> – Leute im Hintergrund werden ignoriert.',
-        'Der <font color="#E89400"><b>gelbe Balken</b></font> links im Bild zeigt die <b>Mindestgröße</b>: Nur wer '
-        'mindestens so groß im Bild ist, zählt. Standard: 40 % der Bildhöhe.',
+        '<font color="#5D6B7A"><b>Grauer Rahmen „zu weit weg“</b></font> – wer weiter hinten steht, wird ignoriert.',
+        'An jedem Rahmen steht, wie groß die Person im Bild ist. Der <font color="#E89400"><b>gelbe Balken</b></font> '
+        'links zeigt die <b>Mindestgröße</b> (Standard: 40 %, gilt hochkant und quer gleich).',
+        '<b>Beispiel:</b> Der Angreifer läuft nah am Handy vorbei, die Aufspielerin steht 5–6 Meter weiter hinten. '
+        'Ist ihr Rahmen grün: in den Einstellungen die Mindestgröße <b>erhöhen</b>, bis er grau wird.',
         '<b>„Bereich“</b>: mit dem Finger einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht. '
         '<b>„Bereich löschen“</b> entfernt ihn wieder.',
         'Für andere Sportarten in den Einstellungen (Zahnrad) ein <b>neues Profil</b> anlegen und dort umschalten.',
@@ -148,7 +150,6 @@ story = [
         'Szenen bleiben am Tablet gespeichert. Behalten werden die letzten 150.',
         '<b>„Behalten“</b> (Stern): Diese Szenen werden nie automatisch gelöscht.',
         '<b>„Speichern“</b> (Pfeil nach unten) öffnet am Tablet das Teilen-Menü (in „Fotos“ sichern, weiterschicken).',
-        '<b>„Szene markieren“</b> speichert sofort die letzten 8 Sekunden.',
     ]),
 
     Paragraph('Wenn etwas nicht geht', h2),
@@ -159,8 +160,7 @@ story = [
         ('„WLAN zu langsam!“', 'Näher zusammenrücken oder in den Einstellungen die Qualität auf 4 Mbit/s senken.'),
         ('Bild liegt auf der Seite', 'Am Tablet unter dem Live-Bild „Drehen“ tippen, bis es stimmt.'),
         ('Bild bleibt stehen', 'Handy gesperrt oder Seite im Hintergrund? Seite wieder nach vorn holen.'),
-        ('Zu viele Szenen', 'Mindestgröße <b>erhöhen</b> oder einen Bereich zeichnen.'),
-        ('Szenen fehlen', 'Mindestgröße <b>senken</b>.'),
+        ('Zu viele / zu wenige Szenen', 'Mindestgröße <b>erhöhen</b> (oder einen Bereich zeichnen) / <b>senken</b>.'),
     ], [50 * mm, W - 50 * mm]),
 
     # Seite 3: Bedienkarte zum Aufhängen
@@ -169,7 +169,8 @@ story = [
     Paragraph('Am Tablet mit dem Finger', sub),
     table([
         ('Ins Bild tippen', 'Abspielen / Pause'),
-        ('Über das Bild wischen', 'Vor- und zurückspulen'),
+        ('Regler unter dem Bild ziehen', 'Szene von Hand vor- und zurückschieben'),
+        ('Über das Bild wischen', 'Fein vor- und zurückspulen'),
         ('Knöpfe neben ' + SYM('▶'), 'Ein Bild zurück / vor'),
         ('0,1× bis 2×', 'Tempo: 0,25× = vierfache Zeitlupe'),
         ('Doppelt tippen', 'Hineinzoomen (Ball, Hand, Fuß)'),

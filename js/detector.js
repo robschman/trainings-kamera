@@ -3,6 +3,14 @@
 
 const TICK_MS = 110; // ~9 Prüfungen pro Sekunde
 
+// Größe einer Person: Höhe ihres Rahmens im Verhältnis zur LANGEN Bildseite. So steht derselbe Wert hochkant und
+// quer für denselben Abstand zum Handy. (Quer ist das Bild nur 9/16 so hoch; auf die Bildhöhe bezogen wäre dieselbe
+// Person dort fast doppelt so "groß", und jemand in 5–6 m Entfernung käme über die Schwelle.)
+export const personSize = (hPx, W, H) => hPx / Math.max(W, H);
+// Die Mindestgröße als Anteil der Bildhöhe, so wie sie im aktuellen Bild gilt. Höchstens 90 %: Quer füllt auch
+// eine sehr nahe Person nur die Bildhöhe, mehr kann niemand erreichen.
+export const minOnScreen = (minHeight, W, H) => Math.min(0.9, minHeight * Math.max(W, H) / H);
+
 export class Detector extends EventTarget {
   od = null;
   aiStatus = 'lädt …';
@@ -51,13 +59,14 @@ export class Detector extends EventTarget {
       let res;
       try { res = this.od.detectForVideo(v, performance.now()); } catch { return; }
       const W = f.w, H = f.h;
+      const need = minOnScreen(p.minHeight, W, H);
       for (const d of res.detections) {
         const b = d.boundingBox, score = d.categories[0]?.score ?? 0;
-        const box = { x: b.originX / W, y: b.originY / H, w: b.width / W, h: b.height / H, score };
+        const box = { x: b.originX / W, y: b.originY / H, w: b.width / W, h: b.height / H, score, size: personSize(b.height, W, H) };
         const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
         const inZone = cx >= zone.x && cx <= zone.x + zone.w && cy >= zone.y && cy <= zone.y + zone.h;
-        box.counted = score >= p.minScore && box.h >= p.minHeight && inZone;
-        box.reason = box.counted ? '' : score < p.minScore ? 'unsicher' : box.h < p.minHeight ? 'zu weit weg' : 'außerhalb';
+        box.counted = score >= p.minScore && box.h >= need && inZone;
+        box.reason = box.counted ? '' : score < p.minScore ? 'unsicher' : box.h < need ? 'zu weit weg' : 'außerhalb';
         boxes.push(box);
         if (box.counted) { present = true; if (!best || box.h > best.h) best = box; }
       }

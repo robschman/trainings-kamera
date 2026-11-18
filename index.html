@@ -148,7 +148,7 @@
           <label>Art <select name="mode"><option value="person">KI: Personen erkennen</option><option value="motion">Nur Bewegung</option></select></label>
           <label>Mindestgröße der Person <span class="val" data-for="minHeight"></span>
             <input name="minHeight" type="range" min="0.05" max="0.9" step="0.05"></label>
-          <p class="hint">Leute im Hintergrund sind klein und lösen nicht aus. Im Live-Bild zeigt der gelbe Balken links die Mindestgröße.</p>
+          <p class="hint">Wer weiter hinten steht, ist im Bild klein und löst nicht aus. Im Live-Bild steht an jedem Rahmen, wie groß die Person ist; der gelbe Balken links zeigt die Mindestgröße. Der Wert gilt hochkant und quer gleich.</p>
           <label>KI-Sicherheit <span class="val" data-for="minScore"></span>
             <input name="minScore" type="range" min="0.2" max="0.9" step="0.05"></label>
           <label>Bewegungs-Empfindlichkeit <span class="val" data-for="motionLevel"></span>
@@ -202,11 +202,13 @@
           <tr><td class="sym"><span class="dot"></span> Szene markieren</td><td>Die letzten Sekunden von Hand als Szene speichern</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Synchron</td><td>Beim Vergleichen beide Szenen gemeinsam steuern</td></tr>
           <tr><td>Live · Verzögert</td><td>Verzögert zeigt das Bild einige Sekunden später – der Spieler sieht sich nach der Aktion selbst</td></tr>
+          <tr><td>Rahmen um Personen</td><td>Grün „Spieler“: löst eine Szene aus. Grau „zu weit weg“: wird übersehen. Die Zahl sagt, wie groß die Person im Bild ist; die Mindestgröße steht in den Einstellungen (Zahnrad).</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-zone"/></svg> Bereich</td><td>Rahmen ins Live-Bild ziehen: nur dort wird erkannt</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-rot"/></svg> Drehen</td><td>Bild vom Handy drehen, wenn es auf der Seite liegt</td></tr>
           <tr><th colspan="2">Mit dem Finger</th></tr>
           <tr><td>Ins Bild tippen</td><td>Abspielen / Pause</td></tr>
-          <tr><td>Über das Bild wischen</td><td>Vor- und zurückspulen</td></tr>
+          <tr><td>Regler unter dem Bild ziehen</td><td>Die Szene von Hand vor- und zurückschieben</td></tr>
+          <tr><td>Über das Bild wischen</td><td>Fein vor- und zurückspulen (ganze Bildbreite = 3 Sekunden)</td></tr>
           <tr><td>Doppelt tippen / zwei Finger spreizen</td><td>Hineinzoomen</td></tr>
           <tr><td>Szene lange drücken</td><td>Im zweiten Player öffnen (Vergleich)</td></tr>
         </table>
@@ -215,7 +217,7 @@
           <tr><td><kbd>Leertaste</kbd> / Klick ins Bild</td><td>Abspielen / Pause</td></tr>
           <tr><td><kbd>←</kbd> <kbd>→</kbd> / Mausrad</td><td>Ein Bild zurück / vor</td></tr>
           <tr><td><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></td><td>Eine Sekunde zurück / vor</td></tr>
-          <tr><td>Maus gedrückt ziehen</td><td>Vor- und zurückspulen</td></tr>
+          <tr><td>Maus gedrückt ziehen</td><td>Vor- und zurückspulen (im Bild oder am Regler darunter)</td></tr>
           <tr><td><kbd>1</kbd>–<kbd>5</kbd></td><td>Tempo 0,1× · 0,25× · 0,5× · 1× · 2×</td></tr>
           <tr><td><kbd>A</kbd> <kbd>B</kbd> <kbd>L</kbd></td><td>Schleife von · bis · aufheben</td></tr>
           <tr><td>Doppelklick / <kbd>Strg</kbd> + Mausrad</td><td>Hineinzoomen (<kbd>Z</kbd> = zurück)</td></tr>

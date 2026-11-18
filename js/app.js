@@ -5,7 +5,7 @@ import { listCameras, openCamera, stopStream, trackInfo, cameraError } from './c
 import { Encoder, nowUs } from './encoder.js';
 import { ClipBuffer } from './buffer.js';
 import { StreamView } from './view.js';
-import { Detector, SceneTracker } from './detector.js';
+import { Detector, SceneTracker, minOnScreen } from './detector.js';
 import { Link, newCode, formatCode } from './link.js';
 import { Player, SPEEDS } from './player.js';
 import { putClip, deleteClip, getClipData, allClips, prune } from './storage.js';
@@ -448,15 +448,17 @@ function drawOverlay(r, p) {
   if (delayOn || !r) return;
 
   if (r.mode === 'person') {
-    // Mindestgröße als Balken links
+    // Mindestgröße als Balken links: So hoch muss der Rahmen einer Person mindestens sein
+    const need = minOnScreen(p.minHeight, vr.w, vr.h) * vr.h;
     g.fillStyle = 'rgba(255,176,32,.85)';
-    g.fillRect(vr.x + 6, Y(1) - p.minHeight * vr.h - 6, 6, p.minHeight * vr.h);
+    g.fillRect(vr.x + 6, Y(1) - need - 6, 6, need);
     g.font = '600 13px system-ui';
     for (const b of r.boxes) {
       g.lineWidth = b.counted ? 3 : 1.5;
       g.strokeStyle = b.counted ? '#35d07f' : 'rgba(200,210,220,.55)';
       g.strokeRect(X(b.x), Y(b.y), b.w * vr.w, b.h * vr.h);
-      const label = b.counted ? 'Spieler' : b.reason;
+      // mit Größe in Prozent – dieselbe Zahl wie „Mindestgröße der Person“ in den Einstellungen
+      const label = (b.counted ? 'Spieler' : b.reason) + (b.reason === 'unsicher' ? '' : ` ${Math.round(b.size * 100)} %`);
       g.fillStyle = b.counted ? '#35d07f' : 'rgba(30,36,44,.8)';
       const tw = g.measureText(label).width + 10;
       g.fillRect(X(b.x), Math.max(vr.y, Y(b.y) - 20), tw, 20);
