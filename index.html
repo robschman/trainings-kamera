@@ -51,6 +51,7 @@
       <button data-layout="clip" title="Nur die Szene, groß" aria-label="Nur Szene"><svg class="pic" aria-hidden="true"><use href="#l-clip"/></svg><span class="lbl">Nur Szene</span></button>
     </div>
     <button id="syncBtn" class="toggle" title="Beide Szenen gemeinsam steuern" aria-label="Synchron"><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg><span class="lbl">Synchron</span></button>
+    <button id="pauseBtn" title="Aufnahme anhalten – solange entstehen keine neuen Szenen (P)" disabled><svg class="ic" aria-hidden="true"><use href="#i-pause"/></svg><span class="lbl">Pause</span></button>
     <button id="markBtn" class="primary" title="Die letzten Sekunden als Szene speichern (M)"><span class="dot"></span><span class="lbl-long">Szene markieren</span><span class="lbl-short">Markieren</span></button>
     <button id="helpBtn" class="sq" title="Bedienung" aria-label="Bedienung">?</button>
     <button id="settingsBtn" class="sq" title="Einstellungen" aria-label="Einstellungen"><svg class="ic" aria-hidden="true"><use href="#i-gear"/></svg></button>
@@ -65,6 +66,7 @@
           <canvas id="delayCanvas"></canvas>
           <canvas id="overlay"></canvas>
           <div class="badge" id="delayBadge">VERZÖGERT</div>
+          <div id="pauseBadge">PAUSE</div>
           <div id="camInfo"></div>
           <div class="livehint" id="liveHint" hidden>Kamera startet …<br><span>beim ersten Mal dauert das einige Sekunden</span></div>
 
@@ -148,7 +150,8 @@
           <label>Art <select name="mode"><option value="person">KI: Personen erkennen</option><option value="motion">Nur Bewegung</option></select></label>
           <label>Mindestgröße der Person <span class="val" data-for="minHeight"></span>
             <input name="minHeight" type="range" min="0.05" max="0.9" step="0.05"></label>
-          <p class="hint">Wer weiter hinten steht, ist im Bild klein und löst nicht aus. Im Live-Bild steht an jedem Rahmen, wie groß die Person ist; der gelbe Balken links zeigt die Mindestgröße. Der Wert gilt hochkant und quer gleich.</p>
+          <p class="hint">Wer weiter hinten steht, ist im Bild klein und löst nicht aus. Im Live-Bild zeigt der gelbe Balken links die Mindestgröße. Der Wert gilt hochkant und quer gleich.</p>
+          <p class="hint" id="sizeNow"></p>
           <label>KI-Sicherheit <span class="val" data-for="minScore"></span>
             <input name="minScore" type="range" min="0.2" max="0.9" step="0.05"></label>
           <label>Bewegungs-Empfindlichkeit <span class="val" data-for="motionLevel"></span>
@@ -199,10 +202,11 @@
         <table class="keys">
           <tr><th colspan="2">Oben und unter dem Live-Bild</th></tr>
           <tr><td>Live | Szene …</td><td>Ansicht wählen: Live-Bild und Szene, zwei Szenen zum Vergleichen oder nur die Szene</td></tr>
+          <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-pause"/></svg> Pause · <svg class="ic" aria-hidden="true"><use href="#i-play"/></svg> Weiter</td><td>Aufnahme anhalten, zum Beispiel in der Trinkpause: Solange entstehen keine Szenen. „Weiter“ nimmt wieder auf.</td></tr>
           <tr><td class="sym"><span class="dot"></span> Szene markieren</td><td>Die letzten Sekunden von Hand als Szene speichern</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Synchron</td><td>Beim Vergleichen beide Szenen gemeinsam steuern</td></tr>
           <tr><td>Live · Verzögert</td><td>Verzögert zeigt das Bild einige Sekunden später – der Spieler sieht sich nach der Aktion selbst</td></tr>
-          <tr><td>Rahmen um Personen</td><td>Grün „Spieler“: löst eine Szene aus. Grau „zu weit weg“: wird übersehen. Die Zahl sagt, wie groß die Person im Bild ist; die Mindestgröße steht in den Einstellungen (Zahnrad).</td></tr>
+          <tr><td>Rahmen um Personen</td><td>Grün: Diese Person löst eine Szene aus. Grau: Sie ist zu weit weg oder außerhalb des Bereichs und wird übersehen.</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-zone"/></svg> Bereich</td><td>Rahmen ins Live-Bild ziehen: nur dort wird erkannt</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-rot"/></svg> Drehen</td><td>Bild vom Handy drehen, wenn es auf der Seite liegt</td></tr>
           <tr><th colspan="2">Mit dem Finger</th></tr>
@@ -223,6 +227,7 @@
           <tr><td>Doppelklick / <kbd>Strg</kbd> + Mausrad</td><td>Hineinzoomen (<kbd>Z</kbd> = zurück)</td></tr>
           <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Vorherige / nächste Szene</td></tr>
           <tr><td><kbd>M</kbd></td><td>Szene von Hand markieren</td></tr>
+          <tr><td><kbd>P</kbd></td><td>Aufnahme anhalten / weiter</td></tr>
           <tr><td><kbd>S</kbd> · <kbd>E</kbd> · <kbd>Entf</kbd></td><td>Behalten · speichern · löschen</td></tr>
           <tr><td><kbd>D</kbd></td><td>Live / verzögert umschalten</td></tr>
           <tr><td>Shift + Klick auf Szene</td><td>Im zweiten Player öffnen</td></tr>

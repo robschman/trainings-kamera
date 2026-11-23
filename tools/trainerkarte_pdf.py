@@ -154,7 +154,7 @@ def story():
             ('Behalten (Stern ' + SYM('★') + ')', 'Szene wird nie von selbst gelöscht'),
             ('Speichern (Pfeil ' + SYM('↓') + ')', 'In „Fotos“ sichern oder weiterschicken'),
             ('Szene markieren', 'Die letzten 8 Sekunden von Hand speichern'),
-            ('Verzögert', 'Der Spieler sieht sich 5 Sekunden später selbst'),
+            ('Pause / Weiter (oben)', 'Aufnahme anhalten, z. B. in der Trinkpause'),
         ], 47 * mm),
 
         Spacer(1, 5),

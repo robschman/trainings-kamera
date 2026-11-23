@@ -100,7 +100,8 @@ story = [
         'das Tablet einmal rund 10 MB. Das Video selbst läuft direkt vom Handy zum Tablet.', ACCENT),
     Spacer(1, 6),
     box('<b>Tipp:</b> Am Tablet in Safari auf <b>Teilen</b> und dann <b>„Zum Home-Bildschirm“</b> tippen. '
-        'Dann startet die Trainings-Kamera wie eine normale App.', GREEN),
+        'Dann startet die Trainings-Kamera wie eine normale App. <b>Laptop statt Tablet</b> geht genauso: '
+        'dieselbe Adresse in Chrome oder Edge öffnen (Windows oder Mac).', GREEN),
 
     Paragraph('Das Handy aufstellen', h2),
     *bullets([
@@ -126,10 +127,10 @@ story = [
     Paragraph('Die Erkennung einstellen', h2),
     Paragraph('Im Live-Bild sieht man, was die App erkennt:', body), Spacer(1, 4),
     *bullets([
-        '<font color="#1F9D5B"><b>Grüner Rahmen „Spieler“</b></font> – diese Person löst eine Szene aus.',
-        '<font color="#5D6B7A"><b>Grauer Rahmen „zu weit weg“</b></font> – wer weiter hinten steht, wird ignoriert.',
-        'An jedem Rahmen steht, wie groß die Person im Bild ist. Der <font color="#E89400"><b>gelbe Balken</b></font> '
-        'links zeigt die <b>Mindestgröße</b> (Standard: 40 %, gilt hochkant und quer gleich).',
+        '<font color="#1F9D5B"><b>Grüner Rahmen</b></font> – diese Person löst eine Szene aus.',
+        '<font color="#5D6B7A"><b>Grauer Rahmen</b></font> – diese Person ist zu weit weg und wird ignoriert.',
+        'Der <font color="#E89400"><b>gelbe Balken</b></font> links zeigt die <b>Mindestgröße</b> (Standard: 40 %, gilt '
+        'hochkant und quer gleich). In den Einstellungen steht darunter, wie groß die Personen gerade im Bild sind.',
         '<b>Beispiel:</b> Der Angreifer läuft nah am Handy vorbei, die Aufspielerin steht 5–6 Meter weiter hinten. '
         'Ist ihr Rahmen grün: in den Einstellungen die Mindestgröße <b>erhöhen</b>, bis er grau wird.',
         '<b>„Bereich“</b>: mit dem Finger einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht. '
@@ -143,13 +144,14 @@ story = [
         ('Szene | Szene', 'Zwei Szenen nebeneinander. Mit <b>Synchron</b> (zwei Pfeile) laufen beide gemeinsam.'),
         ('Nur Szene', 'Die Szene groß über den ganzen Bildschirm.'),
         ('Verzögert', 'Das Live-Bild läuft 5 Sekunden später – der Spieler sieht sich selbst.'),
+        ('Pause / Weiter', 'Hält die Aufnahme an, z. B. in der Trinkpause: Solange entstehen keine Szenen.'),
     ], [38 * mm, W - 38 * mm]),
 
     Paragraph('Szenen speichern', h2),
     *bullets([
         'Szenen bleiben am Tablet gespeichert. Behalten werden die letzten 150.',
         '<b>„Behalten“</b> (Stern): Diese Szenen werden nie automatisch gelöscht.',
-        '<b>„Speichern“</b> (Pfeil nach unten) öffnet am Tablet das Teilen-Menü (in „Fotos“ sichern, weiterschicken).',
+        '<b>„Speichern“</b> (Pfeil nach unten): am Tablet in „Fotos“ sichern oder weiterschicken.',
     ]),
 
     Paragraph('Wenn etwas nicht geht', h2),
@@ -157,10 +159,10 @@ story = [
         ('Tablet wartet auf das Handy', 'Sind beide im selben WLAN? Am Handy die Seite neu laden und „Kamera starten“ tippen.'),
         ('„Vermittlung nicht erreichbar“', 'Hat das Gerät Internet? Zum Verbinden ist es kurz nötig.'),
         ('Geräte finden sich nicht', 'Manche Gäste-WLANs trennen die Geräte. Dann das Tablet mit dem Hotspot des Handys verbinden.'),
-        ('„WLAN zu langsam!“', 'Näher zusammenrücken oder in den Einstellungen die Qualität auf 4 Mbit/s senken.'),
+        ('„WLAN zu langsam!“', 'Näher zusammenrücken oder die Qualität auf 4 Mbit/s senken (Zahnrad).'),
         ('Bild liegt auf der Seite', 'Am Tablet unter dem Live-Bild „Drehen“ tippen, bis es stimmt.'),
-        ('Bild bleibt stehen', 'Handy gesperrt oder Seite im Hintergrund? Seite wieder nach vorn holen.'),
-        ('Zu viele / zu wenige Szenen', 'Mindestgröße <b>erhöhen</b> (oder einen Bereich zeichnen) / <b>senken</b>.'),
+        ('Bild bleibt stehen', 'Handy gesperrt? Die Seite am Handy wieder nach vorn holen.'),
+        ('Zu viele / wenige Szenen', 'Mindestgröße <b>erhöhen</b> (oder einen Bereich zeichnen) / <b>senken</b>.'),
     ], [50 * mm, W - 50 * mm]),
 
     # Seite 3: Bedienkarte zum Aufhängen
@@ -180,13 +182,14 @@ story = [
         ('Behalten (Stern ' + SYM('★') + ')', 'Szene wird nie von selbst gelöscht'),
         ('Speichern (Pfeil nach unten)', 'Szene teilen oder in „Fotos“ sichern'),
         ('Szene markieren', 'Die letzten 8 Sekunden speichern'),
+        ('Pause / Weiter', 'Aufnahme anhalten und fortsetzen'),
     ], [70 * mm, W - 70 * mm], key_style=big_key, txt_style=big_txt, pad=7),
     Spacer(1, 10),
     Paragraph('Die Leiste unter der Szene passt sich dem Bildschirm an: Ist wenig Platz, steht sie in zwei Zeilen und zeigt '
               'bei „Behalten“ und „Speichern“ nur das Zeichen. Alle Zeichen erklärt das <b>?</b> oben rechts am Tablet.', body),
     Spacer(1, 8),
     Paragraph('Am PC mit Tastatur: Leertaste = Abspielen/Pause · Pfeiltasten = Bild für Bild · 1–5 = Tempo · '
-              'A / B / L = Schleife von / bis / aufheben · M = Szene markieren · S = Behalten · D = Live/verzögert', small),
+              'A / B / L = Schleife von / bis / aufheben · M = Szene markieren · P = Pause · S = Behalten · D = Live/verzögert', small),
 ]
 
 doc = BaseDocTemplate(sys.argv[1] if len(sys.argv) > 1 else 'Anleitung-Trainings-Kamera.pdf', pagesize=A4,

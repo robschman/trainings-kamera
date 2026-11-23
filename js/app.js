@@ -9,7 +9,7 @@ import { Detector, SceneTracker, minOnScreen } from './detector.js';
 import { Link, newCode, formatCode } from './link.js';
 import { Player, SPEEDS } from './player.js';
 import { putClip, deleteClip, getClipData, allClips, prune } from './storage.js';
-import { ic } from './icons.js';
+import { ic, setIcon } from './icons.js';
 import qrcode from '../vendor/qrcode.js';
 
 const $ = s => document.querySelector(s);
@@ -56,6 +56,9 @@ const fmtSec = s => s.toFixed(1).replace('.', ',') + ' s';
 const isLocalhost = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 const coarse = matchMedia('(pointer: coarse)').matches;
 
+let paused = false;   // Aufnahme vom Tablet aus angehalten (siehe setPaused)
+let notBefore = 0;    // Stream-Zeit des letzten „Weiter“: davor beginnt keine Szene
+
 const supported = 'VideoDecoder' in window && 'VideoEncoder' in window;
 if (!supported) {
   $('#startErr').textContent = window.isSecureContext
@@ -84,6 +87,7 @@ function stopSource() {
   detector.stop();
   buffer.reset(null);
   mode = null;
+  setPaused(false, true);
   applyRotation();
   livePane.classList.remove('remote');
   $('#camInfo').textContent = '';
@@ -91,7 +95,7 @@ function stopSource() {
 }
 
 function beginDetect() {
-  detector.start(liveFrame, profile);
+  if (!paused) detector.start(liveFrame, profile);
   if (delayOn) delayView.start(settings.delay);
   setRec();
 }
@@ -114,6 +118,7 @@ encoder.addEventListener('stalled', () => {
 });
 buffer.addEventListener('reset', () => {
   tracker.reset();
+  notBefore = 0;
   const c = buffer.config;
   if (c) $('#camInfo').textContent = $('#camInfo').textContent.replace(/\d+×\d+/, `${c.width}×${c.height}`);
 });
@@ -296,14 +301,18 @@ function setRec() {
   $('#rotBtn').hidden = !(mode === 'phone' && link?.state === 'connected');
   const lf = liveFrame();
   main.dataset.video = lf && lf.h > lf.w ? 'portrait' : 'landscape'; // Hochformat: Bilder nebeneinander statt übereinander
-  r.className = 'pill' + (rec ? ' rec' : '');
+  const pausing = rec && paused;
+  r.className = 'pill' + (pausing ? ' paused' : rec ? ' rec' : '');
+  $('#pauseBtn').disabled = !mode;
   const secs = rec ? Math.round((buffer.latestTs - buffer.oldestTs) / 1e6) : 0;
-  const html = rec ? `AUFNAHME<span class="x"> · ${secs} s</span>`
+  const html = pausing ? 'PAUSE'
+    : rec ? `AUFNAHME<span class="x"> · ${secs} s</span>`
     : starting ? 'Kamera startet …'
     : mode === 'phone' ? (link?.state === 'connected' ? 'Handy verbunden' : 'Warte auf Handy')
     : 'Kamera aus';
   if (r.dataset.html !== html) { r.dataset.html = html; r.innerHTML = html; }
-  r.title = rec ? `Aufnahme läuft – die letzten ${secs} Sekunden sind zwischengespeichert` : '';
+  r.title = pausing ? 'Aufnahme angehalten – es entstehen keine Szenen'
+    : rec ? `Aufnahme läuft – die letzten ${secs} Sekunden sind zwischengespeichert` : '';
 }
 setInterval(setRec, 1000);
 
@@ -319,6 +328,7 @@ detector.addEventListener('result', e => {
   tracker.update(r.present, r.t, p);
   drawOverlay(r, p);
   updateDetState(r);
+  showSizes(r);
   if (tracker.active && r.present) {
     const score = r.best ? r.best.h : r.motion;
     if (!best || (score > best.score && performance.now() - best.at > 300)) {
@@ -335,12 +345,59 @@ tracker.addEventListener('start', () => { best = null; });
 tracker.addEventListener('scene', e => {
   const thumb = best?.thumb;
   best = null;
-  cutWhenReady(e.detail.start, e.detail.end, 'auto', thumb);
+  // nach einer Pause beginnt keine Szene vor dem „Weiter“
+  cutWhenReady(Math.max(e.detail.start, notBefore), e.detail.end, 'auto', thumb);
 });
+
+// ---------- Pause: die Aufnahme vom Tablet aus anhalten ----------
+// Das Bild läuft weiter (das Handy filmt und sendet), aber es wird nichts erkannt und keine Szene geschnitten.
+function setPaused(on, quiet) {
+  if (on === paused || (on && !mode)) return;
+  paused = on;
+  if (on) {
+    tracker.flush(profile());   // eine laufende Szene noch sauber abschließen
+    detector.stop();
+    detector.last = null;
+  } else {
+    notBefore = buffer.latestTs || 0;
+    tracker.reset();
+    if (mode && buffer.config) detector.start(liveFrame, profile);
+  }
+  const b = $('#pauseBtn');
+  b.classList.toggle('on', on);
+  setIcon(b, on ? 'play' : 'pause');
+  b.querySelector('.lbl').textContent = on ? 'Weiter' : 'Pause';
+  b.title = on ? 'Aufnahme fortsetzen (P)' : 'Aufnahme anhalten – solange entstehen keine neuen Szenen (P)';
+  $('#markBtn').disabled = on;
+  livePane.classList.toggle('paused', on);
+  drawOverlay(null, profile());
+  updateDetState();
+  setRec();
+  if (!quiet) toast(on ? 'Pause – es entstehen keine neuen Szenen' : 'Aufnahme läuft wieder');
+}
+$('#pauseBtn').onclick = () => setPaused(!paused);
+
+// In den Einstellungen steht unter der Mindestgröße, wie groß die Personen gerade im Bild sind –
+// im Live-Bild selbst stehen keine Zahlen mehr.
+let sizesAt = 0;
+function showSizes(r) {
+  if (!$('#settingsDlg').open) return;
+  if (r && performance.now() - sizesAt < 500) return;   // ruhig bleiben: höchstens zweimal pro Sekunde
+  sizesAt = performance.now();
+  const el = $('#sizeNow'), p = profile();
+  if (p.mode !== 'person' || !detector.od || !mode) el.textContent = '';
+  else if (paused) el.textContent = 'Die Aufnahme ist gerade angehalten.';
+  else if (!r || r.mode !== 'person') el.textContent = '';
+  else {
+    const sizes = r.boxes.filter(b => b.score >= p.minScore).map(b => Math.round(b.size * 100)).sort((a, b) => b - a);
+    el.textContent = sizes.length ? `Gerade im Bild: ${sizes.map(s => s + ' %').join(' und ')}` : 'Gerade ist niemand im Bild.';
+  }
+}
 
 function updateDetState(r) {
   const d = $('#detState');
   const ai = detector.aiStatus;
+  if (paused) { d.textContent = 'Erkennung angehalten'; d.className = 'pill'; return; }
   if (!r) { d.textContent = ai; d.className = 'pill' + (detector.od ? ' ok' : ''); return; }
   const what = r.mode === 'person' ? 'Spieler' : 'Bewegung';
   d.textContent = tracker.active ? 'Szene läuft …' : r.present ? `${what} erkannt` : (r.mode === 'person' ? ai : 'Bewegungsmodus');
@@ -403,9 +460,10 @@ async function show(player, clip, opts, data) {
 }
 
 function markScene() {
+  if (paused) return toast('Die Aufnahme ist angehalten – zuerst „Weiter“ tippen');
   if (!buffer.chunks.length) return toast('Es läuft noch keine Aufnahme');
   const now = buffer.latestTs;
-  cutWhenReady(now - settings.manualLen * 1e6, now + 0.8e6, 'manual', snapshot());
+  cutWhenReady(Math.max(now - settings.manualLen * 1e6, notBefore), now + 0.8e6, 'manual', snapshot());
 }
 $('#markBtn').onclick = markScene;
 $('#rotBtn').onclick = () => {
@@ -452,18 +510,12 @@ function drawOverlay(r, p) {
     const need = minOnScreen(p.minHeight, vr.w, vr.h) * vr.h;
     g.fillStyle = 'rgba(255,176,32,.85)';
     g.fillRect(vr.x + 6, Y(1) - need - 6, 6, need);
-    g.font = '600 13px system-ui';
+    // Nur Rahmen, keine Beschriftung – sonst wird das kleine Live-Bild zu voll.
+    // Grün und dick: löst aus. Grau und dünn: zu weit weg, außerhalb des Bereichs oder unsicher.
     for (const b of r.boxes) {
       g.lineWidth = b.counted ? 3 : 1.5;
-      g.strokeStyle = b.counted ? '#35d07f' : 'rgba(200,210,220,.55)';
+      g.strokeStyle = b.counted ? '#35d07f' : 'rgba(200,210,220,.6)';
       g.strokeRect(X(b.x), Y(b.y), b.w * vr.w, b.h * vr.h);
-      // mit Größe in Prozent – dieselbe Zahl wie „Mindestgröße der Person“ in den Einstellungen
-      const label = (b.counted ? 'Spieler' : b.reason) + (b.reason === 'unsicher' ? '' : ` ${Math.round(b.size * 100)} %`);
-      g.fillStyle = b.counted ? '#35d07f' : 'rgba(30,36,44,.8)';
-      const tw = g.measureText(label).width + 10;
-      g.fillRect(X(b.x), Math.max(vr.y, Y(b.y) - 20), tw, 20);
-      g.fillStyle = b.counted ? '#04150c' : '#cfd6de';
-      g.fillText(label, X(b.x) + 5, Math.max(vr.y, Y(b.y) - 20) + 14);
     }
   } else {
     const lvl = Math.min(1, r.motion / (p.motionLevel * 2));
@@ -713,6 +765,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'ArrowDown') selectRelative(1);
   else if (k >= '1' && k <= '5') p.setSpeed(SPEEDS[+k - 1], true);
   else if (k === 'm' || k === 'M') markScene();
+  else if (k === 'p' || k === 'P') setPaused(!paused);
   else if (k === 'a' || k === 'A') p.action('A', true);
   else if (k === 'b' || k === 'B') p.action('B', true);
   else if (k === 'l' || k === 'L') p.action('clearloop', true);
@@ -790,6 +843,8 @@ async function openSettings() {
   $('#linkInfo').textContent = link?.relayBase ? 'Vermittlung zum Koppeln: ' + link.relayBase.replace(/^https?:\/\//, '') : '';
   dlg.before = JSON.stringify(camWish()) + settings.deviceId + settings.delay;
   dlg.showModal();
+  sizesAt = 0;
+  showSizes(detector.last);
 }
 $('#settingsBtn').onclick = openSettings;
 $('#helpBtn').onclick = () => $('#helpDlg').showModal();

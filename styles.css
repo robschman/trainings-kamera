@@ -88,42 +88,57 @@ header {
 .pill:empty { display: none; }
 .pill.rec { background: rgba(255,77,94,.15); color: var(--red); font-weight: 700; flex: none; }
 .pill.rec::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; margin-right: 6px; animation: blink 1.2s infinite; }
+.pill.paused { background: rgba(255,176,32,.16); color: var(--accent); font-weight: 700; flex: none; }
 .pill.ok { background: rgba(53,208,127,.14); color: var(--green); }
 .pill.hot { background: var(--green); color: #04150c; font-weight: 700; }
 .pill.scene { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
 @keyframes blink { 50% { opacity: .25; } }
 .field { display: flex; align-items: center; gap: 6px; color: var(--muted); flex: none; }
 .field select { max-width: 180px; min-height: var(--tap); }
+#pauseBtn { min-width: 98px; }   /* „Pause“ und „Weiter“ gleich breit: nichts springt beim Umschalten */
+#pauseBtn.on { background: var(--green); border-color: var(--green); color: #04150c; font-weight: 700; }
 #syncBtn { display: none; }
 body:has(main[data-layout="clip-clip"]) #syncBtn { display: inline-flex; }
 #helpBtn { font-weight: 800; font-size: 16px; }
 .pic { width: 30px; height: 20px; flex: none; display: none; fill: none; stroke: currentColor; stroke-width: 1.6; }
 .lbl-short { display: none; }
 
-@media (max-width: 1279px) {
+@media (max-width: 1499px) {
   .brand, .field .cap { display: none; }
   .field select { max-width: 150px; }
 }
-@media (max-width: 1099px) {
-  #syncBtn .lbl, .lbl-long { display: none; }
-  .lbl-short { display: inline; }
+@media (max-width: 1279px) { .field { display: none; } }   /* das Profil lässt sich dann in den Einstellungen wählen */
+@media (max-width: 1179px) {
+  #syncBtn .lbl { display: none; }
   #syncBtn { padding: 0; }
 }
-@media (max-width: 979px) { .field { display: none; } }   /* das Profil lässt sich dann in den Einstellungen wählen */
-@media (max-width: 859px) { .pill .x { display: none; } }
-@media (max-width: 799px) {
+@media (max-width: 1099px) {
+  .lbl-long { display: none; }
+  .lbl-short { display: inline; }
+}
+@media (max-width: 999px) {
   #layoutSeg .lbl { display: none; }                       /* Ansichten als Bildzeichen */
   #layoutSeg .pic { display: block; }
   #layoutSeg button { padding: 0 8px; }
 }
-@media (max-width: 599px) {
+@media (max-width: 859px) { .pill .x { display: none; } }
+@media (max-width: 799px) {
+  #pauseBtn .lbl { display: none; }                        /* Pause / Weiter nur als Zeichen */
+  #pauseBtn { min-width: var(--tap); padding: 0; }
+}
+@media (max-width: 739px) {
   /* sehr schmal (Handy hochkant, geteilter Bildschirm): Anzeige oben, Knöpfe darunter */
   header { flex-wrap: wrap; }
   .status { flex: 1 1 100%; }
   #markBtn { flex: 1 1 auto; }
 }
-@media (max-width: 439px) { body:has(main[data-layout="clip-clip"]) #markBtn .lbl-short { display: none; } }
-@media (max-width: 389px) { #markBtn .lbl-short { display: none; } }
+@media (max-width: 479px) {
+  /* Handy hochkant: enger setzen, damit alle Knöpfe in einer Zeile bleiben */
+  header { gap: 4px; padding: 8px; }
+  #layoutSeg button { padding: 0 4px; }
+  body:has(main[data-layout="clip-clip"]) #markBtn .lbl-short { display: none; }
+}
+@media (max-width: 419px) { #markBtn .lbl-short { display: none; } }
 
 /* ---------- Hauptbereich ---------- */
 main { flex: 1; display: flex; min-height: 0; min-width: 0; }
@@ -134,8 +149,11 @@ main { flex: 1; display: flex; min-height: 0; min-width: 0; }
   container: pane / inline-size;
 }
 .pane.active { border-color: var(--blue); }
-main[data-layout="live-clip"] #livePane { flex-grow: 2; }   /* Live-Bild schmaler, die Szene ist die Hauptsache */
+/* Das Live-Bild ist nur zur Kontrolle da und bleibt klein (ein Viertel), die Szene ist die Hauptsache */
+main[data-layout="live-clip"] #livePane { flex-grow: 1; min-width: 200px; }
 main[data-layout="live-clip"] #p1 { flex-grow: 3; }
+/* Beim Einzeichnen des Bereichs braucht der Finger Platz: solange ist das Live-Bild so groß wie die Szene */
+main[data-layout="live-clip"] #livePane.zoning { flex-grow: 3; }
 /* Solange eine Kamera gewählt oder das Handy gekoppelt wird, bekommt die linke Hälfte mehr Platz */
 main[data-layout="live-clip"] #livePane:has(.start:not([hidden])) { flex-grow: 4; }
 main[data-layout="live-clip"] #p2,
@@ -169,6 +187,12 @@ main[data-layout="clip"] #p2 {
 }
 #camInfo:empty { display: none; }
 .delaying #camInfo { max-width: calc(100% - 160px); }   /* links steht dann „VERZÖGERT“ */
+#pauseBadge {
+  display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  padding: 6px 14px; border-radius: 8px; background: rgba(0,0,0,.72); color: var(--accent);
+  font-weight: 800; font-size: 16px; letter-spacing: 1px; white-space: nowrap; pointer-events: none;
+}
+.paused #pauseBadge { display: block; }
 .livehint {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1; text-align: center;
   padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,.7); font-weight: 700; font-size: 16px;
@@ -258,6 +282,7 @@ main[data-layout="clip"] #p2 {
 .lbar .brk { display: block; }
 .lbar .g-live, .lbar .g-tools { flex: 1 1 auto; }
 .lbar .g-live button, .lbar .g-tools button { flex: 1 1 auto; min-width: 0; }
+.lbar .g-tools { flex-wrap: wrap; }   /* schmales Live-Fenster: „Bereich löschen“ und „Drehen“ untereinander statt gequetscht */
 @container pane (min-width: 530px) {
   .lbar .brk { display: none; }
   .lbar .g-live, .lbar .g-tools, .lbar .g-live button, .lbar .g-tools button { flex: none; }
@@ -349,9 +374,8 @@ aside {
 /* ---------- Hochformat: Fenster übereinander, Szenen als Streifen unten ---------- */
 @media (orientation: portrait) {
   main, .panes { flex-direction: column; }
-  main[data-layout="live-clip"] #livePane { flex-grow: 4; }
-  main[data-layout="live-clip"] #p1 { flex-grow: 5; }
-  main[data-layout="live-clip"] #livePane:has(.start:not([hidden])) { flex-grow: 8; }
+  main[data-layout="live-clip"] #livePane:has(.start:not([hidden])) { flex-grow: 5; }
+  main[data-layout="live-clip"] #livePane { min-width: 0; }
   aside { width: auto; flex-direction: row; border-left: 0; border-top: 1px solid var(--line); }
   .list-head {
     flex: none; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; justify-content: center; gap: 4px;
@@ -366,6 +390,13 @@ aside {
 /* Hochformat-Bild vom Handy: Live-Bild und Szene nebeneinander lassen, auch wenn das Tablet hochkant steht */
 @media (orientation: portrait) and (min-width: 600px) {
   main[data-video="portrait"] .panes { flex-direction: row; }
+  main[data-layout="live-clip"][data-video="portrait"] #livePane { min-width: 200px; }
+}
+/* Handy hochkant: Dort ist zu wenig Höhe für ein kleines Live-Bild über der Szene – beide etwa gleich hoch */
+@media (orientation: portrait) and (max-width: 599px) {
+  main[data-layout="live-clip"] #livePane { flex-grow: 4; }
+  main[data-layout="live-clip"] #p1 { flex-grow: 5; }
+  main[data-layout="live-clip"] #livePane:has(.start:not([hidden])) { flex-grow: 8; }
 }
 /* Querformat, aber schmal (Handy quer, kleines Fenster): schmale Liste, Vorschaubild über dem Text */
 @media (orientation: landscape) and (max-width: 900px) {
@@ -405,6 +436,8 @@ fieldset select, fieldset input[type=number], fieldset input[type=range] { width
 fieldset button { white-space: normal; padding-top: 6px; padding-bottom: 6px; }
 .val { color: var(--text); font-weight: 600; }
 .hint { margin: -4px 0 0; font-size: 12px; color: var(--muted); }
+#sizeNow { margin-top: 0; color: var(--text); font-weight: 600; }
+#sizeNow:empty { display: none; }
 input[type=range] { accent-color: var(--accent); }
 .dlg-foot { display: flex; justify-content: flex-end; margin-top: 14px; }
 /* Tabellen in der Hilfe */

@@ -17,6 +17,7 @@ Es gibt zwei Wege:
 
 - iPhone und iPad mit **iOS / iPadOS 16.4 oder neuer** (Safari). Android: Chrome.
 - Beide Geräte im **selben WLAN**. Gibt es in der Halle keines: am Handy den **Hotspot** einschalten und das Tablet damit verbinden (noch nicht an echten Geräten ausprobiert).
+- **Laptop statt Tablet:** Die Anzeige läuft genauso auf einem Windows-Laptop oder Mac. Dort dieselbe Adresse in **Chrome oder Edge** öffnen, „Handy als Kamera“ klicken und den QR-Code mit dem Handy scannen. Es braucht kein Kabel und keine Installation. (Auf Windows noch nicht ausprobiert.)
 - **Internet** zum Öffnen der App und zum Verbinden. Das Video selbst läuft danach direkt vom Handy zum Tablet.
 
 ### In der Halle: über die Online-Adresse
@@ -75,11 +76,11 @@ Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …�
 
 ## Erkennung einstellen (Volleyball in der Halle)
 
-- **Grüner Rahmen „Spieler“**: Diese Person löst eine Szene aus.
-- **Grauer Rahmen „zu weit weg“**: Wer weiter hinten steht, wird ignoriert.
-- An jedem Rahmen steht, **wie groß** die Person im Bild ist (in Prozent). Eine Szene löst nur aus, wer die **Mindestgröße** erreicht (Standard: 40 %). Der **gelbe Balken** links im Live-Bild zeigt, wie hoch ein Rahmen dafür sein muss. Der Wert gilt hochkant und quer gleich.
-- Ändern: Einstellungen (Zahnrad) → „Mindestgröße der Person“.
-- **Beispiel:** Das Handy steht 1–2 Meter neben dem Netz. Der Angreifer läuft in 2–3 Metern vorbei und soll auslösen, die Aufspielerin steht 5–6 Meter weiter hinten und soll nicht auslösen. Probe vor dem Training: beide an ihren Platz stellen. Ist der Rahmen der Aufspielerin grün, die Mindestgröße erhöhen, bis er grau wird. Ist der Rahmen des Angreifers grau, die Mindestgröße senken. Ein Wert zwischen den beiden Zahlen an den Rahmen passt.
+- **Grüner Rahmen**: Diese Person löst eine Szene aus.
+- **Grauer Rahmen**: Diese Person ist zu weit weg (oder außerhalb des Bereichs) und wird ignoriert. An den Rahmen steht kein Text, damit das kleine Live-Bild übersichtlich bleibt.
+- Eine Szene löst nur aus, wer die **Mindestgröße** erreicht (Standard: 40 %). Der **gelbe Balken** links im Live-Bild zeigt, wie hoch ein Rahmen dafür sein muss. Der Wert gilt hochkant und quer gleich.
+- Ändern: Einstellungen (Zahnrad) → „Mindestgröße der Person“. Direkt darunter steht, wie groß die Personen gerade im Bild sind.
+- **Beispiel:** Das Handy steht 1–2 Meter neben dem Netz. Der Angreifer läuft in 2–3 Metern vorbei und soll auslösen, die Aufspielerin steht 5–6 Meter weiter hinten und soll nicht auslösen. Probe vor dem Training: beide an ihren Platz stellen. Ist der Rahmen der Aufspielerin grün, die Mindestgröße erhöhen, bis er grau wird. Ist der Rahmen des Angreifers grau, die Mindestgröße senken.
 - **„Bereich“**: mit dem Finger oder der Maus einen Rahmen um den Spielbereich ziehen. Dann zählt nur, wer darin steht. **„Bereich löschen“** entfernt den Rahmen.
 - Für andere Sportarten: Einstellungen (Zahnrad oben rechts) → „+ Neues Profil“. Umschalten lässt sich dort unter „Profil“; auf breiten Bildschirmen auch oben in der Kopfzeile.
 
@@ -115,6 +116,7 @@ Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen s
 | Doppelklick, Strg + Mausrad | Hineinzoomen (Z = zurück) |
 | ↑ ↓ | Vorherige / nächste Szene |
 | M | Szene von Hand speichern (die letzten 8 s) |
+| P | Aufnahme anhalten / weiter |
 | S / E / Entf | Behalten / speichern / löschen |
 | D | Live oder verzögertes Bild |
 | Shift + Klick auf Szene | Im zweiten Player öffnen |
@@ -125,6 +127,13 @@ Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen s
 - „Szene | Szene“: zwei Szenen nebeneinander. Mit **Synchron** (zwei Pfeile) laufen beide gemeinsam.
 - „Nur Szene“: die Szene groß.
 - **„Verzögert“** unter dem Live-Bild: Der Spieler sieht sich 5 Sekunden später selbst.
+- Das Live-Bild ist klein gehalten, die Szene bekommt den Platz. Nur beim Einzeichnen des Bereichs wird das Live-Bild kurz groß.
+
+**Pause**
+
+- **„Pause“** oben hält die Aufnahme an, zum Beispiel in der Trinkpause: Solange entstehen keine Szenen. Oben steht dann „PAUSE“, im Live-Bild ebenfalls.
+- **„Weiter“** (derselbe Knopf, jetzt grün) nimmt wieder auf.
+- Das Handy filmt in der Pause weiter und bleibt verbunden. Wer die Kamera ganz ausschalten will, tippt am Handy „Beenden“.
 
 Die Aufnahme läuft in jeder Ansicht weiter.
 
