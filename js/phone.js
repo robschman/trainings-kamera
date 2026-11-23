@@ -53,7 +53,7 @@ async function openCam() {
   if (test) {
     cam.src = test; cam.loop = true;
     await cam.play();
-    await encoder.start({ video: cam, bitrate: wish.bitrate, fps: 30 });
+    await encoder.start({ video: cam, bitrate: wish.bitrate, fps: 30, rawTurn: +params.get('rawturn') || 0 });
   } else {
     stream = await openCamera({ ...wish, facing: 'environment' });
     cam.srcObject = stream;
@@ -108,7 +108,7 @@ function sendConfig() {
   if (!config || link?.state !== 'connected') return;
   let description = null;
   if (config.description) { let s = ''; for (const b of config.description) s += String.fromCharCode(b); description = btoa(s); }
-  link.sendJSON({ t: 'config', codec: config.codec, width: config.width, height: config.height, description });
+  link.sendJSON({ t: 'config', codec: config.codec, width: config.width, height: config.height, rotation: config.rotation || 0, description });
   dropUntilKey = true;
   encoder.forceKey();
 }
@@ -147,13 +147,15 @@ function sendInfo() {
   lastFrames = encoder.frames;
   const slow = dropped > lastDropped;
   lastDropped = dropped;
-  if (running && encoder.width) {
-    const format = encoder.height > encoder.width ? 'Hochformat' : 'Querformat';
-    $('#info').textContent = `${format} · ${encoder.width}×${encoder.height}` + (link?.state === 'connected' ? ` · ${shownFps} fps` : '') + (slow ? ' · WLAN zu langsam!' : '');
+  // Breite und Höhe so, wie das Bild am Bildschirm steht (die Aufnahme selbst kann auf der Seite liegen)
+  const [width, height] = encoder.rotation % 180 ? [encoder.height, encoder.width] : [encoder.width, encoder.height];
+  if (running && width) {
+    const format = height > width ? 'Hochformat' : 'Querformat';
+    $('#info').textContent = `${format} · ${width}×${height}` + (link?.state === 'connected' ? ` · ${shownFps} fps` : '') + (slow ? ' · WLAN zu langsam!' : '');
   }
   link?.sendJSON({
     t: 'info', label: stream ? trackInfo(stream).label : 'Testvideo', deviceId: stream ? trackInfo(stream).deviceId : '',
-    width: encoder.width, height: encoder.height, fps: shownFps, cams, dropped: slow,
+    width, height, fps: shownFps, cams, dropped: slow,
   });
 }
 setInterval(sendInfo, 2000);
@@ -239,7 +241,7 @@ if (params.get('report')) {
   window.addEventListener('unhandledrejection', e => fetch('api/testlog', { method: 'POST', body: JSON.stringify({ page: 'cam', rejection: String(e.reason?.message || e.reason) }) }));
   setInterval(() => fetch('api/testlog', { method: 'POST', body: JSON.stringify({
     page: 'cam', ua: navigator.userAgent.match(/(Chrome|Version)\/[\d.]+/)?.[0], running, link: link?.state,
-    enc: `${encoder.codec} ${encoder.width}x${encoder.height}`, frames: encoder.frames, hold: encoder.hold, dropped,
+    enc: `${encoder.codec} ${encoder.width}x${encoder.height}`, rot: encoder.rotation, cam: `${cam.videoWidth}x${cam.videoHeight}`, frames: encoder.frames, hold: encoder.hold, dropped,
     buffered: link?.buffered, restarts: encoder.restarts, vis: document.visibilityState, bottom: Math.round($('#bottom').getBoundingClientRect().height), stopBtn: Math.round($('#stopBtn').getBoundingClientRect().width), err: $('#err').textContent + ' ' + $('#info').textContent,
   }) }).catch(() => {}), 2000);
 }

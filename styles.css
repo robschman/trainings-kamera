@@ -172,6 +172,9 @@ main[data-layout="clip"] #p2 {
 #liveCanvas, #delayCanvas { display: none; }
 .remote #liveCanvas { display: block; }
 .remote #live { display: none; }
+/* Kamera an diesem Gerät, von Hand gedreht: die Zeichenfläche mit dem gedrehten Bild liegt über dem Video.
+   Das Video bleibt darunter stehen – ausgeblendet liefert es keine Bilder mehr für die Aufnahme. */
+.turned #liveCanvas { display: block; background: #000; }
 .delaying #delayCanvas { display: block; background: #000; }
 #overlay { touch-action: none; pointer-events: none; }
 .zoning #overlay { pointer-events: auto; cursor: crosshair; }
@@ -246,37 +249,38 @@ main[data-layout="clip"] #p2 {
 .cap .ic { width: 18px; height: 18px; }
 .lbl { overflow: hidden; text-overflow: ellipsis; }
 
-/* -- Leiste unter der Szene: Schritt · Tempo · Schleife · Behalten/Speichern -- */
+/* -- Leiste unter der Szene: Schritt · Tempo · Schleife · Drehen/Behalten/Speichern -- */
 .pbar .big { min-width: var(--play); }
 .pbar .big .ic { width: 22px; height: 22px; }
 .g-speed button { min-width: 40px; padding: 0 8px; flex: 1 1 auto; }
 .g-clip { margin-left: auto; }
 
-/* schmal (unter 380): drei Zeilen */
+/* schmal (unter 380): drei Zeilen, Drehen/Behalten/Speichern nur als Symbol */
 .pbar .b0, .pbar .b1 { display: block; }
 .pbar .g-step, .pbar .g-speed { flex: 1 1 auto; }
 .pbar .g-step .big { flex: 1 1 auto; }
 .pbar .g-clip .lbl { display: none; }
-@container pane (max-width: 339px) { .pbar .cap .lbl { display: none; } }
+@container pane (max-width: 399px) { .pbar .cap .lbl { display: none; } }
 
-/* mittel (380 bis 799): zwei Zeilen – oben Schritt und Tempo, unten Schleife und Behalten/Speichern */
+/* mittel (380 bis 949): zwei Zeilen – oben Schritt und Tempo, unten Schleife und Drehen/Behalten/Speichern */
 @container pane (min-width: 380px) {
   .pbar .b0 { display: none; }
   .pbar .g-step { flex: none; }
   .pbar .g-step .big { flex: none; }
   .pbar .g-speed { flex: 1 1 0; }
 }
-@container pane (min-width: 500px) { .pbar .g-clip .lbl { display: inline; } }
+/* ab 520 stehen bei Drehen, Behalten und Speichern die Wörter; bis 574 fällt dafür das Wort „Schleife“ weg */
+@container pane (min-width: 520px) { .pbar .g-clip .lbl { display: inline; } }
+@container pane (min-width: 520px) and (max-width: 574px) { .pbar .cap .lbl { display: none; } }
 
-/* breit (ab 800): alles in einer Zeile */
-@container pane (min-width: 800px) {
+/* breit (ab 950): alles in einer Zeile; bis 1009 ohne das Wort „Schleife“ */
+@container pane (min-width: 950px) {
   .pbar .b1 { display: none; }
   .pbar .g-speed { flex: none; }
   .pbar .g-speed button { flex: none; min-width: var(--tap); padding: 0 10px; }
   .pbar .g-speed, .pbar .g-loop { border-left: 1px solid var(--line); padding-left: 8px; }
-  .pbar .g-clip .lbl { display: none; }
 }
-@container pane (min-width: 900px) { .pbar .g-clip .lbl { display: inline; } }
+@container pane (min-width: 950px) and (max-width: 1009px) { .pbar .cap .lbl { display: none; } }
 
 /* -- Leiste unter dem Live-Bild: Live/Verzögert · Bereich · Drehen -- */
 .lbar .brk { display: block; }

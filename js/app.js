@@ -2,7 +2,7 @@
 
 import { settings, profile, updateProfile, DEFAULT_PROFILE, save } from './settings.js';
 import { listCameras, openCamera, stopStream, trackInfo, cameraError } from './camera.js';
-import { Encoder, nowUs } from './encoder.js';
+import { Encoder, nowUs, measureRotation } from './encoder.js';
 import { ClipBuffer } from './buffer.js';
 import { StreamView } from './view.js';
 import { Detector, SceneTracker, minOnScreen } from './detector.js';
@@ -10,6 +10,7 @@ import { Link, newCode, formatCode } from './link.js';
 import { Player, SPEEDS } from './player.js';
 import { putClip, deleteClip, getClipData, allClips, prune } from './storage.js';
 import { ic, setIcon } from './icons.js';
+import { mp4Rotation, setMp4Rotation } from './mp4rot.js';
 import qrcode from '../vendor/qrcode.js';
 
 const $ = s => document.querySelector(s);
@@ -36,12 +37,66 @@ let phone = null;      // letzte Statusmeldung vom Handy
 let phoneBye = false;  // true = die Übertragung wurde am Handy mit Absicht beendet
 const BYE = 'Die Übertragung wurde am Handy beendet. Zum Weitermachen dort „Kamera starten“ tippen.';
 
-// Bild vom Handy drehen (nur bei "Handy als Kamera"): Live-Bild, verzögertes Bild und gespeicherte Szenen
-function applyRotation() {
-  const r = mode === 'phone' ? (settings.rotate || 0) : 0;
-  liveView.rotation = delayView.rotation = buffer.rotation = r;
-}
 let delayOn = false;
+
+// ---------- Drehen ----------
+// Drei Dinge bestimmen, wie ein Bild liegt:
+//   auto      – so liegt das Bild in der Aufnahme; das misst das Aufnahme-Gerät selbst (buffer.config.rotation)
+//   turn.live – Knopf „Drehen“ unter dem Live-Bild: dreht das Live-Bild und alle neuen Szenen
+//   turn.fix  – Knopf „Drehen“ unter der Szene: dreht neue Szenen zusätzlich (wenn sie anders liegen als das Live-Bild)
+// Gemerkt wird getrennt für "Handy als Kamera" und "Kamera an diesem Gerät".
+const turn = { live: 0, fix: 0 };
+const SESSION = Math.random().toString(36).slice(2, 8);
+const turnKeys = () => mode === 'phone' ? ['rotate', 'sceneFix'] : mode === 'local' ? ['rotateLocal', 'sceneFixLocal'] : null;
+function loadTurn() {
+  const k = turnKeys();
+  turn.live = k ? settings[k[0]] || 0 : 0;
+  turn.fix = k ? settings[k[1]] || 0 : 0;
+  applyRotation();
+}
+function saveTurn() {
+  const k = turnKeys();
+  if (k) { settings[k[0]] = turn.live; settings[k[1]] = turn.fix; }
+}
+const autoRot = () => buffer.config?.rotation || 0;
+function applyRotation() {
+  const shown = (autoRot() + turn.live) % 360;
+  liveView.rotation = shown;                    // Live-Bild vom Handy
+  buffer.rotation = (shown + turn.fix) % 360;   // neue Szenen
+  // Verzögertes Bild: beim Handy wie das Live-Bild; an diesem Gerät kommt es wie die Szenen aus der Aufnahme
+  delayView.rotation = mode === 'phone' ? shown : buffer.rotation;
+  const turned = !!mode && mode !== 'phone' && turn.live !== 0;
+  livePane.classList.toggle('turned', turned);
+  if (turned) runTurned();
+}
+// Daran erkennt man Szenen aus demselben Lauf: gleiche Kamera, gleiche Bildlage, seit dem Öffnen der Seite
+const streamKey = () => { const c = buffer.config; return c ? `${SESSION}:${mode}:${c.width}x${c.height}:${c.rotation || 0}` : ''; };
+// Breite und Höhe des Bildes, so wie es am Bildschirm steht
+const shownSize = () => { const c = buffer.config; return !c ? null : (autoRot() + turn.live) % 180 ? [c.height, c.width] : [c.width, c.height]; };
+
+// Kamera an diesem Gerät, von Hand gedreht: Das Video-Element selbst lässt sich nicht drehen. Sein Bild wird gedreht
+// auf die Zeichenfläche gemalt; Anzeige, Erkennung und Vorschaubilder nehmen dann diese.
+const liveCtx = liveCanvas.getContext('2d');
+function paintTurned() {
+  const r = turn.live, vw = live.videoWidth, vh = live.videoHeight;
+  const w = r % 180 ? vh : vw, h = r % 180 ? vw : vh;
+  if (liveCanvas.width !== w || liveCanvas.height !== h) { liveCanvas.width = w; liveCanvas.height = h; }
+  liveCtx.save();
+  liveCtx.translate(w / 2, h / 2);
+  liveCtx.rotate(r * Math.PI / 180);
+  liveCtx.drawImage(live, -vw / 2, -vh / 2);
+  liveCtx.restore();
+}
+let turnedLoop = 0;
+function runTurned() {
+  cancelAnimationFrame(turnedLoop);
+  const step = () => {
+    if (!mode || mode === 'phone' || !turn.live) return;
+    if (live.videoWidth && live.readyState >= 2 && livePane.clientWidth > 20) paintTurned();
+    turnedLoop = requestAnimationFrame(step);
+  };
+  step();
+}
 
 // ---------- Hilfen ----------
 function toast(msg) {
@@ -88,7 +143,7 @@ function stopSource() {
   buffer.reset(null);
   mode = null;
   setPaused(false, true);
-  applyRotation();
+  loadTurn();
   livePane.classList.remove('remote');
   $('#camInfo').textContent = '';
   setRec();
@@ -105,7 +160,9 @@ function liveFrame() {
   if (mode === 'phone') {
     return liveView.lastTs ? { el: liveCanvas, w: liveCanvas.width, h: liveCanvas.height, t: liveView.lastTs } : null;
   }
-  return live.videoWidth && live.readyState >= 2 ? { el: live, w: live.videoWidth, h: live.videoHeight, t: nowUs() } : null;
+  if (!live.videoWidth || live.readyState < 2) return null;
+  if (turn.live) { paintTurned(); return { el: liveCanvas, w: liveCanvas.width, h: liveCanvas.height, t: nowUs() }; }
+  return { el: live, w: live.videoWidth, h: live.videoHeight, t: nowUs() };
 }
 
 encoder.addEventListener('config', e => buffer.configure(e.detail));
@@ -114,14 +171,18 @@ encoder.addEventListener('error', e => toast('Aufnahme-Fehler: ' + (e.detail?.me
 // Kamera-Kette hängt: Kamera neu öffnen (bei einer Videodatei genügt ein neuer Encoder)
 encoder.addEventListener('stalled', () => {
   if (mode === 'local') startLocal();
-  else if (mode === 'file') encoder.start({ video: live, bitrate: settings.bitrate, fps: 30 });
+  else if (mode === 'file') encoder.start({ video: live, bitrate: settings.bitrate, fps: 30, rawTurn: +params.get('rawturn') || 0 });
 });
 buffer.addEventListener('reset', () => {
   tracker.reset();
   notBefore = 0;
-  const c = buffer.config;
-  if (c) $('#camInfo').textContent = $('#camInfo').textContent.replace(/\d+×\d+/, `${c.width}×${c.height}`);
+  applyRotation();   // die Aufnahme kann jetzt anders liegen (Gerät gedreht)
+  showCamSize();
 });
+function showCamSize() {
+  const s = shownSize();
+  if (s) $('#camInfo').textContent = $('#camInfo').textContent.replace(/\d+×\d+/, `${s[0]}×${s[1]}`);
+}
 
 // --- Kamera an diesem Gerät ---
 async function startLocal() {
@@ -130,6 +191,7 @@ async function startLocal() {
   $('#startErr').textContent = '';
   const my = ++startNo;
   mode = 'local';
+  loadTurn();
   settings.source = 'local';
   setRec();
   try {
@@ -165,6 +227,7 @@ async function startFile(blob) {
   showBox(null);
   const my = ++startNo;
   mode = 'file';
+  loadTurn();
   setRec();
   try {
     await Encoder.warmUp();
@@ -172,7 +235,7 @@ async function startFile(blob) {
     live.src = URL.createObjectURL(blob);
     live.loop = true;
     await live.play();
-    await encoder.start({ video: live, bitrate: settings.bitrate, fps: 30 });
+    await encoder.start({ video: live, bitrate: settings.bitrate, fps: 30, rawTurn: +params.get('rawturn') || 0 });
     $('#camInfo').textContent = `Videodatei · ${live.videoWidth}×${live.videoHeight}`;
     beginDetect();
   } catch (e) {
@@ -188,7 +251,7 @@ function startPhone() {
   stopSource();
   mode = 'phone';
   phoneBye = false;
-  applyRotation();
+  loadTurn();
   settings.source = 'phone';
   if (!settings.code) settings.code = params.get('code') || newCode();
   livePane.classList.add('remote');
@@ -222,7 +285,7 @@ const camWish = () => ({ t: 'set', resolution: settings.resolution, fps: setting
 
 async function onPhoneMessage(m) {
   if (m.t === 'config') {
-    let cfg = { codec: m.codec, width: m.width, height: m.height, description: m.description ? Uint8Array.from(atob(m.description), c => c.charCodeAt(0)) : null };
+    let cfg = { codec: m.codec, width: m.width, height: m.height, rotation: m.rotation || 0, description: m.description ? Uint8Array.from(atob(m.description), c => c.charCodeAt(0)) : null };
     // sofort übernehmen, die ersten Bilder kommen direkt hinterher
     if (!buffer.configure(cfg) && liveView.on) return; // Handy hat nur seinen Encoder neu gestartet
     cfg = buffer.config;
@@ -239,7 +302,8 @@ async function onPhoneMessage(m) {
     }
   } else if (m.t === 'info') {
     phone = m;
-    $('#camInfo').textContent = `📱 ${m.label || 'Handy'} · ${m.width}×${m.height} · ${m.fps} fps` + (m.dropped ? ' · Funk langsam!' : '');
+    const [w, h] = shownSize() || [m.width, m.height];
+    $('#camInfo').textContent = `📱 ${m.label || 'Handy'} · ${w}×${h} · ${m.fps} fps` + (m.dropped ? ' · Funk langsam!' : '');
   } else if (m.t === 'bye') {
     phoneBye = true;
     tracker.flush(profile());
@@ -298,7 +362,7 @@ function setRec() {
   const rec = mode && buffer.chunks.length && buffer.now() - buffer.latestTs < 2e6;
   const starting = (mode === 'local' || mode === 'file') && !rec;
   $('#liveHint').hidden = !starting || !$('#startBox').hidden;
-  $('#rotBtn').hidden = !(mode === 'phone' && link?.state === 'connected');
+  $('#rotBtn').disabled = !mode;
   const lf = liveFrame();
   main.dataset.video = lf && lf.h > lf.w ? 'portrait' : 'landscape'; // Hochformat: Bilder nebeneinander statt übereinander
   const pausing = rec && paused;
@@ -426,7 +490,7 @@ async function cutWhenReady(start, end, source, thumbCanvas) {
     createdAt: Date.now() - Math.max(0, (buffer.now() - cut.start) / 1000),
     duration: cut.duration, fps: cut.fps, width: cut.width, height: cut.height,
     thumb: await canvasToBuffer(thumbCanvas || snapshot()),
-    starred: false, source, profile: settings.profile,
+    starred: false, source, profile: settings.profile, key: streamKey(),
   };
   try {
     await putClip(clip, cut.data);
@@ -466,11 +530,68 @@ function markScene() {
   cutWhenReady(Math.max(now - settings.manualLen * 1e6, notBefore), now + 0.8e6, 'manual', snapshot());
 }
 $('#markBtn').onclick = markScene;
+
+// „Drehen“ unter dem Live-Bild: Live-Bild und alle neuen Szenen eine Vierteldrehung weiter
 $('#rotBtn').onclick = () => {
-  settings.rotate = ((settings.rotate || 0) + 90) % 360;
+  if (!mode) return;
+  turn.live = (turn.live + 90) % 360;
+  saveTurn();
+  // ein eingezeichneter Bereich dreht sich mit
+  const z = profile().zone;
+  if (z) updateProfile({ zone: { x: 1 - z.y - z.h, y: z.x, w: z.h, h: z.w } });
   applyRotation();
-  toast(settings.rotate ? `Bild um ${settings.rotate}° gedreht – neue Szenen werden so gespeichert` : 'Bild wieder ungedreht');
+  detector.last = null;
+  drawOverlay(null, profile());
+  showCamSize();
+  setRec();
+  toast('Live-Bild gedreht – neue Szenen kommen auch so');
 };
+
+// „Drehen“ unter der Szene: diese Szene eine Vierteldrehung weiter. Gedreht wird in der gespeicherten Datei,
+// also stimmt auch das gesicherte Video. Stammt die Szene aus dem laufenden Betrieb, kommen neue Szenen ab jetzt genauso.
+const turning = new Set();
+async function rotateClip(clip) {
+  if (!clip || turning.has(clip.id)) return;
+  turning.add(clip.id);
+  try {
+    let data = await getClipData(clip.id).catch(() => null);
+    if (data instanceof Blob) data = await data.arrayBuffer();
+    if (!data) return toast('Diese Szene ist nicht mehr gespeichert');
+    const rot = (mp4Rotation(data) + 90) % 360;
+    if (!setMp4Rotation(data, rot)) return toast('Diese Szene lässt sich nicht drehen');
+    [clip.width, clip.height] = [clip.height, clip.width];
+    await putClip(stripUrl(clip), data);
+    const follow = !!clip.key && clip.key === streamKey();
+    if (follow) {
+      turn.fix = (rot - autoRot() - turn.live + 720) % 360;
+      saveTurn();
+      applyRotation();
+    }
+    toast(follow ? 'Szene gedreht – neue Szenen kommen jetzt auch so' : 'Szene gedreht');
+    const shown = players.filter(p => p.clip === clip);
+    await Promise.all(shown.map(p => p.swap(new Blob([data], { type: 'video/mp4' }))));
+    // Vorschaubild in der Liste neu aus der gedrehten Szene holen
+    const v = shown.find(p => p.clip === clip)?.video;
+    if (v?.videoWidth) {
+      const c = document.createElement('canvas');
+      c.width = 320; c.height = Math.round(320 * v.videoHeight / v.videoWidth);
+      c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+      const thumb = await canvasToBuffer(c);
+      if (thumb && clips.includes(clip)) {
+        if (clip.thumbUrl) URL.revokeObjectURL(clip.thumbUrl);
+        delete clip.thumbUrl;
+        clip.thumb = thumb;
+        await putClip(stripUrl(clip));
+      }
+    }
+    renderClips();
+  } catch (e) {
+    console.error(e);
+    toast('Das Drehen hat nicht geklappt');
+  } finally {
+    turning.delete(clip.id);
+  }
+}
 
 // ---------- Overlay: Erkennung + Bereich ----------
 function videoRect() {
@@ -608,6 +729,7 @@ players.forEach(p => {
   p.addEventListener('hint', e => toast(e.detail));
   p.addEventListener('star', e => toggleStar(e.detail));
   p.addEventListener('export', e => exportClip(e.detail));
+  p.addEventListener('rotate', e => rotateClip(e.detail));
 });
 $('#syncBtn').onclick = () => {
   syncOn = !syncOn;
@@ -771,6 +893,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'l' || k === 'L') p.action('clearloop', true);
   else if (k === 's' || k === 'S') toggleStar(p.clip);
   else if (k === 'e' || k === 'E') exportClip(p.clip);
+  else if (k === 'r' || k === 'R') rotateClip(p.clip);
   else if (k === 'Delete' || k === 'Backspace') removeClip(p.clip);
   else if (k === 'd' || k === 'D') setDelay(!delayOn);
   else if (k === 'z' || k === 'Z') p.resetZoom();
@@ -926,7 +1049,7 @@ setInterval(keepAwake, 5000);
 document.addEventListener('visibilitychange', keepAwake);
 
 // zum Testen in der Konsole
-window.__app = { buffer, encoder, detector, tracker, players, liveView, delayView, get link() { return link; }, get clips() { return clips; }, get mode() { return mode; }, get phone() { return phone; } };
+window.__app = { buffer, encoder, detector, tracker, players, liveView, delayView, turn, startFile, get link() { return link; }, get clips() { return clips; }, get mode() { return mode; }, get phone() { return phone; } };
 if (params.get('report')) {
   // Test-Tab beendet sich selbst
   setTimeout(() => { stopSource(); players.forEach(p => p.unload()); document.body.innerHTML = '<p style="padding:40px;font-size:20px">Test beendet – dieser Tab kann geschlossen werden.</p>'; }, 75000);
@@ -936,7 +1059,9 @@ if (params.get('report')) {
     page: 'view', ua: navigator.userAgent.match(/(Chrome|Version)\/[\d.]+/)?.[0], mode, link: link?.state,
     chunks: buffer.chunks.length, cfg: buffer.config && `${buffer.config.codec} ${buffer.config.width}x${buffer.config.height}`,
     liveTs: liveView.lastTs, lag: Math.round((buffer.now() - liveView.lastTs) / 1000), det: detector.last && { present: detector.last.present, mode: detector.last.mode },
-    ai: detector.aiStatus, restarts: encoder.restarts, encCodec: encoder.codec, clips: clips.map(c => ({ dur: +c.duration.toFixed(2), fps: +c.fps.toFixed(1) })),
+    ai: detector.aiStatus, restarts: encoder.restarts, encCodec: encoder.codec,
+    rot: { enc: [encoder.width, encoder.height, encoder.rotation], cfg: buffer.config?.rotation, buf: buffer.rotation, live: [live.videoWidth, live.videoHeight], p1: [players[0].video.videoWidth, players[0].video.videoHeight],
+      same: (() => { try { const v = players[0].video; return v.videoWidth ? measureRotation(live, live.videoWidth, live.videoHeight, v, v.videoWidth, v.videoHeight) : 'keine Szene'; } catch (e) { return String(e); } })() }, clips: clips.map(c => ({ dur: +c.duration.toFixed(2), fps: +c.fps.toFixed(1) })),
     player: players[0].clip && { t: +players[0].video.currentTime.toFixed(2), dur: +(players[0].video.duration || 0).toFixed(2), w: players[0].video.videoWidth, paused: players[0].video.paused, err: players[0].video.error?.message },
     err: $('#pairErr').textContent + $('#startErr').textContent,
     layout: (() => { // Maße der Oberfläche: Fensterbreite / Höhe der Leiste, Symbol sichtbar?

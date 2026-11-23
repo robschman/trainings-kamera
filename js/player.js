@@ -59,6 +59,7 @@ export class Player extends EventTarget {
           <button data-a="clearloop" class="sq" title="Schleife aufheben (L)" aria-label="Schleife aufheben" disabled>${ic('x')}</button>
         </div>
         <div class="grp g-clip">
+          <button data-a="rotate" title="Szene um eine Vierteldrehung drehen – wenn sie auf der Seite liegt (R)" aria-label="Szene drehen">${ic('rot')}<span class="lbl">Drehen</span></button>
           <button data-a="star" title="Mit Stern behalten – wird nicht automatisch gelöscht (S)" aria-label="Behalten">${ic('star')}<span class="lbl">Behalten</span></button>
           <button data-a="export" title="Als Video speichern (E)" aria-label="Speichern">${ic('save')}<span class="lbl">Speichern</span></button>
         </div>
@@ -122,6 +123,27 @@ export class Player extends EventTarget {
     this.#updateUI();
   }
 
+  // Dieselbe Szene mit neuem Inhalt laden (nach dem Drehen): Stelle, Tempo und Schleife bleiben.
+  // Meldet sich zurück, sobald das Bild wieder an der alten Stelle steht.
+  swap(blob) {
+    const v = this.video, t = this.#pos, playing = !v.paused;
+    if (this.url) URL.revokeObjectURL(this.url);
+    this.#dropSeek();
+    const url = this.url = URL.createObjectURL(blob);
+    this.resetZoom();
+    return new Promise(done => {
+      const timer = setTimeout(done, 3000);
+      const ready = () => { clearTimeout(timer); done(); };
+      v.addEventListener('loadeddata', () => {
+        if (this.url !== url) return ready();   // inzwischen wurde eine andere Szene geladen
+        if (t > 0.01) { v.addEventListener('seeked', ready, { once: true }); v.currentTime = Math.min(t, v.duration || t); }
+        else ready();
+        if (playing) v.play().catch(() => {});
+      }, { once: true });
+      v.src = url;
+    });
+  }
+
   unload() {
     if (this.url) URL.revokeObjectURL(this.url);
     this.url = null;
@@ -171,7 +193,7 @@ export class Player extends EventTarget {
         this.loopA = this.loopB = null;
         break;
       case 'zoomout': this.resetZoom(); break;
-      case 'star': case 'export': this.dispatchEvent(new CustomEvent(a, { detail: this.clip })); broadcast = false; break;
+      case 'star': case 'export': case 'rotate': this.dispatchEvent(new CustomEvent(a, { detail: this.clip })); broadcast = false; break;
     }
     this.#updateUI();
     if (broadcast) this.#emit(a === 'play' ? (v.paused ? 'pause' : 'resume') : a);

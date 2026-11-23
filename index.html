@@ -112,7 +112,7 @@
           <div class="grp g-tools">
             <button id="zoneBtn" title="Mit dem Finger oder der Maus einen Rahmen ziehen: nur dort wird erkannt"><svg class="ic" aria-hidden="true"><use href="#i-zone"/></svg><span class="lbl">Bereich</span></button>
             <button id="zoneClear" title="Erkennungs-Bereich entfernen – dann zählt wieder das ganze Bild" hidden><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span class="lbl">Bereich löschen</span></button>
-            <button id="rotBtn" title="Bild um eine Vierteldrehung drehen – wenn es auf der Seite liegt" hidden><svg class="ic" aria-hidden="true"><use href="#i-rot"/></svg><span class="lbl">Drehen</span></button>
+            <button id="rotBtn" title="Live-Bild um eine Vierteldrehung drehen – neue Szenen kommen dann auch so" disabled><svg class="ic" aria-hidden="true"><use href="#i-rot"/></svg><span class="lbl">Drehen</span></button>
           </div>
         </div>
       </section>
@@ -195,6 +195,7 @@
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-prev"/></svg> <svg class="ic" aria-hidden="true"><use href="#i-next"/></svg></td><td>Ein Bild zurück / ein Bild vor</td></tr>
           <tr><td class="sym">0,1× … 2×</td><td>Tempo: 0,25× ist vierfache Zeitlupe, 1× normal, 2× doppelt so schnell</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-loop"/></svg> von · bis</td><td>Schleife: nur einen Ausschnitt immer wieder abspielen. An der Anfangsstelle <b>von</b> tippen, an der Endstelle <b>bis</b>. Das <svg class="ic" aria-hidden="true"><use href="#i-x"/></svg> daneben hebt die Schleife auf.</td></tr>
+          <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-rot"/></svg> Drehen</td><td>Szene um eine Vierteldrehung drehen, wenn sie auf der Seite liegt. Neue Szenen kommen danach genauso, und auch das gesicherte Video ist gedreht.</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg> Behalten</td><td>Szene mit Stern merken – sie wird nie von selbst gelöscht</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Speichern</td><td>Szene als Video sichern (am Tablet: in „Fotos“ sichern oder teilen)</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg></td><td>Szene löschen (in der Liste); oben in der Liste: alle ohne Stern löschen</td></tr>
@@ -208,7 +209,7 @@
           <tr><td>Live · Verzögert</td><td>Verzögert zeigt das Bild einige Sekunden später – der Spieler sieht sich nach der Aktion selbst</td></tr>
           <tr><td>Rahmen um Personen</td><td>Grün: Diese Person löst eine Szene aus. Grau: Sie ist zu weit weg oder außerhalb des Bereichs und wird übersehen.</td></tr>
           <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-zone"/></svg> Bereich</td><td>Rahmen ins Live-Bild ziehen: nur dort wird erkannt</td></tr>
-          <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-rot"/></svg> Drehen</td><td>Bild vom Handy drehen, wenn es auf der Seite liegt</td></tr>
+          <tr><td class="sym"><svg class="ic" aria-hidden="true"><use href="#i-rot"/></svg> Drehen</td><td>Live-Bild um eine Vierteldrehung drehen, wenn es auf der Seite liegt. Neue Szenen kommen dann auch so.</td></tr>
           <tr><th colspan="2">Mit dem Finger</th></tr>
           <tr><td>Ins Bild tippen</td><td>Abspielen / Pause</td></tr>
           <tr><td>Regler unter dem Bild ziehen</td><td>Die Szene von Hand vor- und zurückschieben</td></tr>
@@ -228,7 +229,7 @@
           <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Vorherige / nächste Szene</td></tr>
           <tr><td><kbd>M</kbd></td><td>Szene von Hand markieren</td></tr>
           <tr><td><kbd>P</kbd></td><td>Aufnahme anhalten / weiter</td></tr>
-          <tr><td><kbd>S</kbd> · <kbd>E</kbd> · <kbd>Entf</kbd></td><td>Behalten · speichern · löschen</td></tr>
+          <tr><td><kbd>R</kbd> · <kbd>S</kbd> · <kbd>E</kbd> · <kbd>Entf</kbd></td><td>Szene drehen · behalten · speichern · löschen</td></tr>
           <tr><td><kbd>D</kbd></td><td>Live / verzögert umschalten</td></tr>
           <tr><td>Shift + Klick auf Szene</td><td>Im zweiten Player öffnen</td></tr>
         </table>

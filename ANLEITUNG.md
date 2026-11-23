@@ -49,7 +49,7 @@ Der Mac wird nur zum Öffnen der Seiten gebraucht. Das Video läuft direkt vom H
 
 - Fest aufstellen (Stativ), etwa 1–2 Meter vom Spieler entfernt.
 - **Hochkant oder quer:** So wie das Handy steht, wird gefilmt. Hochkant passt für die Schlagbewegung aus der Nähe, quer für den Anlauf. Das Handy kann auch im laufenden Betrieb gedreht werden.
-- Liegt das Bild am Tablet auf der Seite, dort unter dem Live-Bild **„Drehen“** tippen. Das passiert, wenn am iPhone die Ausrichtungssperre eingeschaltet ist und das Handy quer steht.
+- Die App stellt das Bild von selbst richtig herum. Liegt es am Tablet trotzdem auf der Seite, dort unter dem Bild **„Drehen“** tippen, bis es stimmt (siehe „Drehen“ weiter unten). Das kann passieren, wenn am iPhone die Ausrichtungssperre eingeschaltet ist.
 - Die Seite muss **offen und im Vordergrund** bleiben. Wird das Handy gesperrt oder die App gewechselt, stoppt die Kamera. Der Bildschirm bleibt von selbst an.
 - **Ans Ladegerät oder eine Powerbank** hängen, Filmen und Senden brauchen viel Strom.
 - **„🌙 Abdunkeln“** macht den Bildschirm fast schwarz und spart Akku. Die Kamera läuft weiter.
@@ -98,10 +98,11 @@ Beim allerersten Start nach dem Öffnen des Browsers kann „Kamera startet …�
 | Doppelt tippen, zwei Finger spreizen | Hineinzoomen (Ball, Hand, Fuß). „Zoom … ✕“ oben links im Bild stellt zurück |
 | Schleife: von / bis / ✕ | Nur einen Ausschnitt wiederholen: an der Anfangsstelle „von“ tippen, an der Endstelle „bis“. Das ✕ hebt die Schleife auf |
 | Szene lange drücken | Im zweiten Player öffnen (Vergleich) |
+| Drehen (runder Pfeil) | Die Szene um eine Vierteldrehung drehen, wenn sie auf der Seite liegt |
 | Behalten (Stern) | Szene wird nie von selbst gelöscht |
 | Speichern (Pfeil nach unten) | Szene teilen oder in „Fotos“ sichern |
 
-Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen steht sie in zwei Zeilen und zeigt bei „Behalten“ und „Speichern“ nur das Zeichen. Alle Zeichen erklärt das **?** oben rechts.
+Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen steht sie in zwei Zeilen und zeigt bei „Drehen“, „Behalten“ und „Speichern“ nur das Zeichen. Alle Zeichen erklärt das **?** oben rechts.
 
 **Mit Maus und Tastatur (PC)**
 
@@ -117,6 +118,7 @@ Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen s
 | ↑ ↓ | Vorherige / nächste Szene |
 | M | Szene von Hand speichern (die letzten 8 s) |
 | P | Aufnahme anhalten / weiter |
+| R | Szene drehen |
 | S / E / Entf | Behalten / speichern / löschen |
 | D | Live oder verzögertes Bild |
 | Shift + Klick auf Szene | Im zweiten Player öffnen |
@@ -128,6 +130,13 @@ Die Leiste unter der Szene passt sich der Breite an: Auf schmalen Bildschirmen s
 - „Nur Szene“: die Szene groß.
 - **„Verzögert“** unter dem Live-Bild: Der Spieler sieht sich 5 Sekunden später selbst.
 - Das Live-Bild ist klein gehalten, die Szene bekommt den Platz. Nur beim Einzeichnen des Bereichs wird das Live-Bild kurz groß.
+
+**Drehen**
+
+- **„Drehen“ unter dem Live-Bild** dreht das Live-Bild um eine Vierteldrehung weiter. Neue Szenen kommen dann auch so.
+- **„Drehen“ unter der Szene** dreht die Szene, die gerade läuft. Neue Szenen kommen danach genauso, und auch das gesicherte Video ist gedreht.
+- Einfach so oft tippen, bis das Bild richtig steht. Das Tablet merkt sich die Einstellung, getrennt für „Handy als Kamera“ und „Kamera an diesem Gerät“.
+- Wird das Tablet oder das Handy später anders gehalten und ein Bild liegt wieder falsch: noch einmal „Drehen“ tippen.
 
 **Pause**
 
@@ -153,7 +162,7 @@ Die Aufnahme läuft in jeder Ansicht weiter.
 | „Zu viele Verbindungsversuche“ | Eine Minute warten, dann „Neu verbinden“ tippen. |
 | „Handy und Tablet finden sich nicht“ | Manche Gäste-WLANs lassen Geräte nicht miteinander reden. Dann das Tablet mit dem Hotspot des Handys verbinden. |
 | Am Handy steht „WLAN zu langsam!“ | Näher zusammenrücken oder Einstellungen (Zahnrad) → Qualität auf 4 Mbit/s senken. |
-| Bild liegt auf der Seite | Am Tablet unter dem Live-Bild „Drehen“ tippen, bis es stimmt. |
+| Bild liegt auf der Seite | Unter dem Bild „Drehen“ tippen, bis es stimmt. Den Knopf gibt es unter dem Live-Bild und unter der Szene. |
 | Bild bleibt stehen | Ist das Handy gesperrt oder die Seite im Hintergrund? Seite wieder nach vorn holen. |
 | Zu viele Szenen | Mindestgröße erhöhen oder einen Bereich zeichnen. |
 | Szenen fehlen | Mindestgröße senken. |

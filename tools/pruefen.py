@@ -3,7 +3,7 @@
 #
 #   python3 tools/pruefen.py                 alles gegen einen eigenen lokalen Server
 #   python3 tools/pruefen.py layout          nur die Maße in allen Bildschirmgrößen (schnell, ohne Kamera)
-#   python3 tools/pruefen.py pause regler    einzelne Abläufe mit dem Test-Video
+#   python3 tools/pruefen.py pause regler drehen handy   einzelne Abläufe mit dem Test-Video
 #   python3 tools/pruefen.py alles https://…  gegen eine andere Adresse
 #   BILDER=<Ordner>                          dort Bildschirmfotos ablegen
 #
@@ -19,6 +19,7 @@ BASE = next((a.rstrip('/') for a in sys.argv[1:] if a.startswith('http')), None)
 WHAT = set(args) or {'alles'}
 SHOTS = os.environ.get('BILDER')
 FILE = '/#src=file:test/bewegung.mp4&profile=Nur%20Bewegung'
+MUSTER = '/#src=file:test/muster.mp4&profile=Nur%20Bewegung'   # Test-Video mit Muster: daran lässt sich die Bildlage messen
 problems = []
 
 
@@ -140,10 +141,14 @@ def layout(br):
                 rows_ok = m['kopfZeilen'] == 1 if w >= 740 else m['kopfZeilen'] <= (2 if w >= 390 else 3)
                 if not rows_ok:
                     bad(where, f"Kopfzeile hat {m['kopfZeilen']} Zeilen")
+                # Leiste unter der Szene: ab 380 px Breite höchstens zwei Zeilen, ab 950 px eine
+                soll = 1 if m['szene'][0] >= 950 else 2 if m['szene'][0] >= 380 else 3
+                if m['szeneZeilen'] > soll:
+                    bad(where, f"Leiste unter der Szene hat {m['szeneZeilen']} Zeilen bei {m['szene'][0]} px Breite (soll {soll})")
                 if state == 'pause' and lay == 'live-clip' and not m['pauseSchild']:
                     bad(where, 'Pause-Schild im Live-Bild fehlt')
                 if lay == 'live-clip' and state == 'auf':
-                    line.append(f"{video[:4]}: Live {m['live'][0]}×{m['live'][1]} (Bild {m['liveBild'][0]}×{m['liveBild'][1]}, {m['liveZeilen']} Z.) | Szene {m['szene'][0]}×{m['szene'][1]} (Bild {m['szeneBild'][0]}×{m['szeneBild'][1]})")
+                    line.append(f"{video[:4]}: Live {m['live'][0]}×{m['live'][1]} (Bild {m['liveBild'][0]}×{m['liveBild'][1]}, {m['liveZeilen']} Z.) | Szene {m['szene'][0]}×{m['szene'][1]} (Bild {m['szeneBild'][0]}×{m['szeneBild'][1]}, {m['szeneZeilen']} Z.)")
                 if lay == 'live-clip' and state == 'bereich':
                     line.append(f"beim Bereich-Zeichnen: Live {m['live'][0]}×{m['live'][1]}")
             print(f"  {'Finger' if coarse else 'Maus  '} {w:>4}×{h:<4} Kopf {m['kopfZeilen']} Z./{m['kopfHoehe']} px · " + ' · '.join(line))
@@ -157,13 +162,13 @@ def layout(br):
     print(f'  {n} Kombinationen gemessen')
 
 
-def with_clips(br, w, h, coarse):
+def with_clips(br, w, h, coarse, url=None):
     ctx = br.new_context(viewport={'width': w, 'height': h}, has_touch=coarse, is_mobile=coarse, device_scale_factor=2)
     page = ctx.new_page()
     errs = []
     page.on('console', lambda m: errs.append(m.text) if m.type == 'error' and '404' not in m.text else None)
     page.on('pageerror', lambda e: errs.append(str(e)))
-    page.goto(BASE + FILE)
+    page.goto(BASE + (url or FILE))
     page.wait_for_function("document.querySelectorAll('#clips .clip').length >= 2 && document.querySelector('#p1').classList.contains('has-clip')", timeout=120000)
     page.wait_for_function("document.querySelector('#p1 video').readyState >= 2 && document.querySelector('#p1 video').duration > 1", timeout=20000)
     return ctx, page, errs
@@ -252,6 +257,191 @@ def regler(br):
         ctx.close()
 
 
+# Zustand rund ums Drehen: Lage von Live-Bild, Szene im Player und gespeicherter Datei
+TURN = """async () => {
+  const q = s => document.querySelector(s), app = window.__app, v = q('#p1 video'), live = q('#live'), lc = q('#liveCanvas');
+  const { mp4Rotation } = await import('/js/mp4rot.js');
+  const { getClipData } = await import('/js/storage.js');
+  const { measureRotation } = await import('/js/encoder.js');
+  const clip = app.players[0].clip, newest = app.clips[0];
+  const file = async c => { if (!c) return null; let d = await getClipData(c.id); if (d instanceof Blob) d = await d.arrayBuffer(); return mp4Rotation(d); };
+  const img = q(`.clip[data-id="${clip?.id}"] img`);
+  const shown = getComputedStyle(lc).display !== 'none' ? lc : live, sw = shown.videoWidth || shown.width, sh = shown.videoHeight || shown.height;
+  let same = 'kein Bild';
+  try { same = measureRotation(shown, sw, sh, v, v.videoWidth, v.videoHeight); } catch (e) { same = String(e); }
+  return { turn: { ...app.turn }, auto: app.buffer.config?.rotation || 0, bufRot: app.buffer.rotation, enc: [app.encoder.width, app.encoder.height, app.encoder.rotation],
+    live: [sw, sh], turned: q('#livePane').classList.contains('turned'), format: q('main').dataset.video, info: q('#camInfo').textContent,
+    clips: app.clips.length, newest: newest && { id: newest.id, w: newest.width, h: newest.height, file: await file(newest) },
+    p1: clip && { id: clip.id, w: clip.width, h: clip.height, vw: v.videoWidth, vh: v.videoHeight, t: v.currentTime, paused: v.paused, speed: v.playbackRate, file: await file(clip),
+                  thumb: img && [img.naturalWidth, img.naturalHeight] },
+    same, toast: q('#toast').textContent, rotBtn: [!q('#rotBtn').hidden, q('#rotBtn').disabled] };
+}"""
+
+
+def drehen(br):
+    print('== Drehen (mit Test-Video)')
+    ctx, page, errs = with_clips(br, 1180, 820, True, MUSTER)
+    st = lambda: page.evaluate(TURN)
+    fmt = lambda s: f"Live {s['live'][0]}×{s['live'][1]} · Szene im Player {s['p1']['vw']}×{s['p1']['vh']} (Datei {s['p1']['file']}°) · neue Szenen {s['bufRot']}°"
+    def newest_into_player(n0, was):
+        page.wait_for_function(f"window.__app.clips.length > {n0}", timeout=60000)
+        page.wait_for_timeout(300)
+        page.click('#clips .clip')       # neueste Szene steht vorn
+        page.wait_for_function("(() => { const a = window.__app, v = a.players[0].video; return a.players[0].clip === a.clips[0] && v.readyState >= 2 && v.videoWidth > 0; })()", timeout=20000)
+        page.wait_for_timeout(400)
+        return st()
+
+    # 1. Die Messung selbst: ein Bild, das um 0/90/180/270 Grad gedreht gezeigt wird, muss genau so erkannt werden
+    got = page.evaluate("""async () => {
+      const { measureRotation } = await import('/js/encoder.js');
+      const v = document.querySelector('#live'), vw = v.videoWidth, vh = v.videoHeight, out = {};
+      for (const k of [0, 90, 180, 270]) {
+        const w = k % 180 ? vh : vw, h = k % 180 ? vw : vh;
+        const c = Object.assign(document.createElement('canvas'), { width: w, height: h }), g = c.getContext('2d');
+        g.translate(w / 2, h / 2); g.rotate(k * Math.PI / 180); g.drawImage(v, -vw / 2, -vh / 2);
+        out[k] = measureRotation(c, w, h, v, vw, vh);
+      }
+      const blank = Object.assign(document.createElement('canvas'), { width: vw, height: vh });
+      out.leer = measureRotation(blank, vw, vh, blank, vw, vh);
+      return out; }""")
+    print(f"  Messung der Bildlage: {got}")
+    if [got[k] for k in ('0', '90', '180', '270')] != [0, 90, 180, 270] or got['leer'] is not None: bad('Drehen', f'Messung der Bildlage falsch: {got}')
+
+    a = st()
+    print(f"  vorher:            {fmt(a)} · Knopf sichtbar/gesperrt: {a['rotBtn']}")
+    if a['rotBtn'] != [True, False]: bad('Drehen', 'Knopf „Drehen“ unter dem Live-Bild fehlt oder ist gesperrt')
+    if a['enc'][2] != 0 or a['auto'] != 0 or a['turned'] or a['same'] != 0: bad('Drehen', f'ungedrehtes Test-Video wird als gedreht erkannt: {a}')
+    if page.locator('#p1 [data-a="rotate"]').count() != 1 or 'Drehen' not in page.locator('#p1 [data-a="rotate"]').inner_text(): bad('Drehen', 'Knopf „Drehen“ unter der Szene fehlt oder hat kein Wort')
+
+    # 2. Live-Bild drehen: Bild steht hochkant, neue Szenen kommen genauso
+    page.click('#rotBtn'); page.wait_for_timeout(1300)
+    b = st()
+    print(f"  Live gedreht:      {fmt(b)} · Format {b['format']} · „{b['toast']}“ · {b['info']}")
+    if not (b['turn']['live'] == 90 and b['turned'] and b['live'] == [a['live'][1], a['live'][0]] and b['format'] == 'portrait' and b['bufRot'] == 90):
+        bad('Drehen', f'Live-Bild nach „Drehen“ nicht hochkant: {b}')
+    if SHOTS: page.screenshot(path=os.path.join(SHOTS, 'drehen-1-live-gedreht.png'))
+    c = newest_into_player(b['clips'], b)
+    print(f"  neue Szene:        {fmt(c)} · Vergleich Live/Szene: {c['same']} (0 = liegen gleich)")
+    if not (c['p1']['file'] == 90 and c['p1']['vh'] > c['p1']['vw'] and c['p1']['h'] > c['p1']['w']): bad('Drehen', f'neue Szene ist nicht mitgedreht: {c}')
+    if c['same'] != 0: bad('Drehen', f"neue Szene liegt anders als das Live-Bild: {c['same']}")
+    if SHOTS: page.screenshot(path=os.path.join(SHOTS, 'drehen-2-neue-szene.png'))
+
+    # 3. Szene drehen: Datei, Player und Vorschaubild drehen sich, die Stelle bleibt, neue Szenen folgen
+    page.evaluate("() => { const p = window.__app.players[0]; p.setSpeed(0.25); p.video.pause(); p.video.currentTime = 1.2; }")
+    page.wait_for_timeout(500)
+    c = st()
+    page.click('#p1 [data-a="rotate"]'); page.wait_for_timeout(1500)
+    d = st()
+    print(f"  Szene gedreht:     {fmt(d)} · Stelle {c['p1']['t']:.2f} -> {d['p1']['t']:.2f} s · Tempo {d['p1']['speed']} · Vorschaubild {c['p1']['thumb']} -> {d['p1']['thumb']} · „{d['toast']}“")
+    if not (d['p1']['file'] == 180 and d['p1']['vw'] > d['p1']['vh'] and d['p1']['w'] > d['p1']['h']): bad('Drehen', f'Szene nach „Drehen“ nicht gedreht: {d}')
+    if abs(d['p1']['t'] - c['p1']['t']) > 0.1 or not d['p1']['paused'] or d['p1']['speed'] != 0.25: bad('Drehen', f"Stelle/Tempo nach dem Drehen verloren: {d['p1']}")
+    if not (d['p1']['thumb'] and d['p1']['thumb'][0] > d['p1']['thumb'][1]): bad('Drehen', f"Vorschaubild nicht mitgedreht: {d['p1']['thumb']}")
+    if not (d['turn']['fix'] == 90 and d['bufRot'] == 180 and 'neue Szenen' in d['toast']): bad('Drehen', f'neue Szenen folgen der gedrehten Szene nicht: {d}')
+    if SHOTS: page.screenshot(path=os.path.join(SHOTS, 'drehen-3-szene-gedreht.png'))
+    e = newest_into_player(d['clips'], d)
+    print(f"  nächste Szene:     {fmt(e)}")
+    if not (e['p1']['file'] == 180 and e['p1']['vw'] > e['p1']['vh']): bad('Drehen', f'nächste Szene kommt nicht so wie die gedrehte: {e}')
+
+    # 4. Eine alte Szene (nicht aus diesem Lauf) drehen: nur sie selbst ändert sich. Taste R dreht ebenfalls.
+    page.evaluate("() => { delete window.__app.players[0].clip.key; }")
+    page.keyboard.press('r'); page.wait_for_timeout(1500)
+    f = st()
+    print(f"  alte Szene (R):    {fmt(f)} · „{f['toast']}“")
+    if not (f['p1']['file'] == 270 and f['bufRot'] == 180 and f['toast'] == 'Szene gedreht'): bad('Drehen', f'alte Szene: Drehen wirkt falsch: {f}')
+
+    # 5. Dreimal weiter am Live-Bild: wieder wie am Anfang
+    for _ in range(3): page.click('#rotBtn'); page.wait_for_timeout(250)
+    g = st()
+    print(f"  Live 3× weiter:    Live {g['live'][0]}×{g['live'][1]} · gedreht-Anzeige {g['turned']} · Format {g['format']}")
+    if g['turn']['live'] != 0 or g['turned'] or g['live'] != a['live'] or g['format'] != 'landscape': bad('Drehen', f'Live-Bild kommt nach vier Vierteldrehungen nicht zurück: {g}')
+
+    # 6. Bereich dreht sich mit: Rahmen links oben wandert nach rechts oben
+    z = page.evaluate("""async () => { const s = await import('/js/settings.js'); s.updateProfile({ zone: { x: 0.1, y: 0.2, w: 0.3, h: 0.4 } });
+      document.querySelector('#rotBtn').click(); const z = s.profile().zone; s.updateProfile({ zone: null }); document.querySelector('#rotBtn').click(); document.querySelector('#rotBtn').click(); document.querySelector('#rotBtn').click();
+      return [z.x, z.y, z.w, z.h].map(n => Math.round(n * 100) / 100); }""")
+    print(f"  Bereich dreht mit: 0,1/0,2/0,3/0,4 -> {z}")
+    if z != [0.4, 0.1, 0.4, 0.3]: bad('Drehen', f'Bereich dreht sich nicht richtig mit: {z}')
+    for x in errs: bad('Drehen', 'Fehler in der Seite: ' + x)
+    ctx.close()
+
+    # 7. Aufnahme liegt anders als der Bildschirm (wie am iPad). Zwei Fälle:
+    #    a) ein Video, das nur durch den Dateikopf richtig steht – wie der Browser dessen Bilder weitergibt, ist seine Sache;
+    #    b) die Bilder kommen so, als läge der Kamera-Chip quer (rawturn) – das muss die App selbst merken.
+    #    In beiden Fällen muss die Szene so stehen wie das Live-Bild, ohne dass jemand „Drehen“ tippt.
+    for name, url, soll in (('liegend gespeichert', '/#src=file:test/gedreht.mp4&profile=Nur%20Bewegung', None),
+                            ('Chip quer (90°)', MUSTER + '&rawturn=90', 90), ('Chip quer (270°)', MUSTER + '&rawturn=270', 270),
+                            ('Chip kopfüber (180°)', MUSTER + '&rawturn=180', 180)):
+        ctx, page, errs = with_clips(br, 820, 1180, True, url)
+        page.wait_for_timeout(1500)
+        h = st()
+        i = newest_into_player(h['clips'], h)
+        page.click('#delayBtn'); page.wait_for_timeout(6500)
+        dl = page.evaluate("""async () => { const { measureRotation } = await import('/js/encoder.js'); const l = document.querySelector('#live'), d = document.querySelector('#delayCanvas');
+          return [d.width, d.height, measureRotation(l, l.videoWidth, l.videoHeight, d, d.width, d.height)]; }""")
+        print(f"  {name + ':':<22} Bildschirm {i['live'][0]}×{i['live'][1]} · Aufnahme {i['enc'][0]}×{i['enc'][1]}, gemessene Lage {i['enc'][2]}° · Szene {i['p1']['vw']}×{i['p1']['vh']} (Datei {i['p1']['file']}°) · Vergleich Live/Szene: {i['same']} · verzögertes Bild {dl[0]}×{dl[1]}, Vergleich: {dl[2]}")
+        if i['same'] != 0 or (i['p1']['vh'] > i['p1']['vw']) != (i['live'][1] > i['live'][0]): bad('Drehen', f'{name}: Szene steht anders als das Live-Bild: {i}')
+        if soll is not None and i['enc'][2] != soll: bad('Drehen', f"{name}: Lage falsch gemessen ({i['enc'][2]}° statt {soll}°)")
+        if dl[2] != 0: bad('Drehen', f'{name}: verzögertes Bild steht anders als das Live-Bild: {dl}')
+        if SHOTS and soll == 90: page.screenshot(path=os.path.join(SHOTS, 'drehen-4-chip-quer.png'))
+        for x in errs: bad('Drehen', 'Fehler in der Seite: ' + x)
+        ctx.close()
+
+
+
+def handy(br):
+    print('== Handy als Kamera: Bildlage kommt mit (zwei Seiten, Test-Video statt Kamera)')
+    # Lage des Live-Bilds vom Handy, der Szene und des Musters selbst (Vergleichsbild)
+    LAGE = """async () => {
+      const q = s => document.querySelector(s), app = window.__app, lc = q('#liveCanvas'), v = q('#p1 video');
+      const { measureRotation } = await import('/js/encoder.js'); const { mp4Rotation } = await import('/js/mp4rot.js'); const { getClipData } = await import('/js/storage.js');
+      let ref = window.__ref;
+      if (!ref) { ref = window.__ref = Object.assign(document.createElement('video'), { muted: true, loop: true, src: 'test/muster.mp4' }); await ref.play(); await new Promise(r => setTimeout(r, 400)); }
+      const clip = app.players[0].clip; let d = clip && await getClipData(clip.id); if (d instanceof Blob) d = await d.arrayBuffer();
+      return { link: app.link?.state, auto: app.buffer.config?.rotation, raw: app.buffer.config && [app.buffer.config.width, app.buffer.config.height], turn: { ...app.turn }, live: [lc.width, lc.height],
+        liveGegenMuster: measureRotation(ref, 1280, 720, lc, lc.width, lc.height), clips: app.clips.length, info: q('#camInfo').textContent,
+        szene: clip && [v.videoWidth, v.videoHeight], datei: d ? mp4Rotation(d) : null, szeneGegenMuster: clip && v.videoWidth ? measureRotation(ref, 1280, 720, v, v.videoWidth, v.videoHeight) : null,
+        rotBtn: [!q('#rotBtn').hidden, q('#rotBtn').disabled] };
+    }"""
+    for turn in (0, 90):
+        ctx = br.new_context(viewport={'width': 1180, 'height': 820}, has_touch=True, is_mobile=True)
+        tab = ctx.new_page(); errs = []
+        tab.on('pageerror', lambda e: errs.append(str(e)))
+        tab.goto(BASE + '/#src=phone&profile=Nur%20Bewegung')
+        tab.wait_for_selector('#pairCode')
+        code = tab.evaluate("async () => (await import('/js/settings.js')).settings.code")
+        ph = ctx.new_page()
+        ph.on('pageerror', lambda e: errs.append('Handy: ' + str(e)))
+        ph.goto(BASE + f'/kamera.html#c={code}&src=test/muster.mp4&auto=1' + (f'&rawturn={turn}' if turn else ''))
+        try:
+            tab.wait_for_function("window.__app.link?.state === 'connected' && window.__app.liveView.lastTs > 0", timeout=60000)
+        except Exception:
+            bad('Handy', f'keine Verbindung zwischen den beiden Seiten (Chip {turn}°): ' + tab.evaluate("document.querySelector('#pairState').textContent + ' ' + document.querySelector('#pairErr').textContent")); ctx.close(); continue
+        tab.wait_for_function("window.__app.clips.length >= 1", timeout=90000)
+        tab.wait_for_timeout(500); tab.click('#clips .clip')
+        tab.wait_for_function("(() => { const v = window.__app.players[0].video; return v.readyState >= 2 && v.videoWidth > 0; })()", timeout=20000)
+        tab.wait_for_timeout(1200)
+        a = tab.evaluate(LAGE)
+        hinfo = ph.evaluate("document.querySelector('#info').textContent")
+        print(f"  Chip {turn:>3}°: Aufnahme {a['raw'][0]}×{a['raw'][1]}, Lage vom Handy gemeldet {a['auto']}° · Live {a['live'][0]}×{a['live'][1]} (gegen Muster: {a['liveGegenMuster']}) · Szene {a['szene'][0]}×{a['szene'][1]}, Datei {a['datei']}° (gegen Muster: {a['szeneGegenMuster']}) · Anzeige „{a['info']}“ · am Handy „{hinfo}“")
+        if a['auto'] != turn or a['liveGegenMuster'] != 0 or a['szeneGegenMuster'] != 0 or a['live'] != [1280, 720]: bad('Handy', f'Chip {turn}°: Bild steht am Tablet nicht richtig: {a}')
+        if '1280×720' not in a['info'] or 'Querformat · 1280×720' not in hinfo: bad('Handy', f"Chip {turn}°: Größe falsch angezeigt: „{a['info']}“ / „{hinfo}“")
+        if a['rotBtn'] != [True, False]: bad('Handy', '„Drehen“ unter dem Live-Bild fehlt')
+        # von Hand weiterdrehen: Live-Bild und die nächste Szene stehen danach eine Vierteldrehung weiter
+        tab.click('#rotBtn'); tab.wait_for_timeout(1500)
+        n = tab.evaluate("window.__app.clips.length")
+        tab.wait_for_function(f"window.__app.clips.length > {n}", timeout=60000)
+        tab.wait_for_timeout(500); tab.click('#clips .clip')
+        tab.wait_for_function("(() => { const a = window.__app, v = a.players[0].video; return a.players[0].clip === a.clips[0] && v.readyState >= 2 && v.videoWidth > 0; })()", timeout=20000)
+        tab.wait_for_timeout(1200)
+        b = tab.evaluate(LAGE)
+        print(f"             nach „Drehen“: Live {b['live'][0]}×{b['live'][1]} (gegen Muster: {b['liveGegenMuster']}) · neue Szene {b['szene'][0]}×{b['szene'][1]}, Datei {b['datei']}° (gegen Muster: {b['szeneGegenMuster']}) · „{b['info']}“")
+        # 270 heißt: Das Bild müsste 270° weitergedreht werden, um wieder wie das Muster zu stehen – es steht also 90° gedreht
+        if b['liveGegenMuster'] != 270 or b['szeneGegenMuster'] != 270 or b['live'] != [720, 1280] or b['datei'] != (turn + 90) % 360: bad('Handy', f'Chip {turn}°: „Drehen“ wirkt nicht auf Live-Bild und neue Szene: {b}')
+        if SHOTS and turn == 90: tab.screenshot(path=os.path.join(SHOTS, 'handy-gedreht.png'))
+        for x in errs: bad('Handy', 'Fehler in der Seite: ' + x)
+        ctx.close()
+
+
 server = None
 if not BASE:
     port = free_port()
@@ -267,7 +457,7 @@ try:
     wait_http(f'http://127.0.0.1:{cport}/json/version')
     with sync_playwright() as pw:
         br = pw.chromium.connect_over_cdp(f'http://127.0.0.1:{cport}')
-        for name, fn in (('layout', layout), ('pause', pause), ('regler', regler)):
+        for name, fn in (('layout', layout), ('pause', pause), ('regler', regler), ('drehen', drehen), ('handy', handy)):
             if name in WHAT or 'alles' in WHAT:
                 try:
                     fn(br)

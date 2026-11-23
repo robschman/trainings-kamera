@@ -8,17 +8,17 @@ import { nowUs } from './encoder.js';
 
 export class ClipBuffer extends EventTarget {
   chunks = [];     // {ts, type, data}
-  config = null;   // {codec, width, height, description}
+  config = null;   // {codec, width, height, description, rotation} – rotation: so liegt das Bild im Stream (vom Aufnahme-Gerät gemessen)
   gen = 0;         // erhöht sich bei jedem neuen Stream (Kamera neu gestartet, Handy gedreht …)
   seconds = 90;
-  rotation = 0;    // Szenen so gedreht speichern (0, 90, 180, 270 Grad im Uhrzeigersinn)
+  rotation = 0;    // Szenen so gedreht speichern (0, 90, 180, 270 Grad im Uhrzeigersinn) – setzt die App, siehe applyRotation
   #skew = null;    // kleinster beobachteter Abstand eigene Uhr − Kamera-Uhr
 
   // Neue Stream-Einstellung übernehmen. Ist sie gleich der alten (Encoder nur neu gestartet),
   // bleibt der Speicher erhalten – das nächste Stück ist ohnehin ein Schlüsselbild.
   configure(config) {
     const a = this.config, same = (x, y) => (x?.length ?? -1) === (y?.length ?? -1) && (!x || x.every((v, i) => v === y[i]));
-    if (a && a.codec === config.codec && a.width === config.width && a.height === config.height && same(a.description, config.description)) return false;
+    if (a && a.codec === config.codec && a.width === config.width && a.height === config.height && (a.rotation || 0) === (config.rotation || 0) && same(a.description, config.description)) return false;
     this.reset(config);
     return true;
   }

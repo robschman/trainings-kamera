@@ -20,7 +20,10 @@ export const DEFAULTS = {
   code: '',              // Kopplungs-Code fürs Handy
   relay: '',             // eigene Vermittlungs-Adresse (leer = automatisch)
   phoneCam: '',          // gewählte Kamera/Linse am Handy
-  rotate: 0,             // Bild vom Handy drehen (0, 90, 180, 270 Grad), falls es auf der Seite liegt
+  // Drehen von Hand (0, 90, 180, 270 Grad im Uhrzeigersinn), getrennt für "Handy als Kamera" und "Kamera an diesem Gerät":
+  rotate: 0, rotateLocal: 0,       // Live-Bild und neue Szenen
+  sceneFix: 0, sceneFixLocal: 0,   // neue Szenen zusätzlich (Knopf „Drehen“ unter der Szene)
+  turn2: true,                     // siehe load(): alte Dreh-Einstellung wurde einmal zurückgesetzt
   deviceId: '',
   resolution: '720',     // '720' | '1080'
   fps: 60,
@@ -44,7 +47,12 @@ let state = load();
 function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (raw) return { ...DEFAULTS, ...raw, profiles: { ...DEFAULTS.profiles, ...raw.profiles } };
+    if (raw) {
+      // Früher musste ein liegendes Bild vom Handy von Hand gedreht werden. Jetzt stellt die App es selbst richtig;
+      // eine alte Hand-Einstellung würde es doppelt drehen. Darum wird sie einmal zurückgesetzt.
+      if (!raw.turn2) { raw.rotate = 0; raw.turn2 = true; }
+      return { ...DEFAULTS, ...raw, profiles: { ...DEFAULTS.profiles, ...raw.profiles } };
+    }
   } catch {}
   return structuredClone(DEFAULTS);
 }

@@ -107,7 +107,7 @@ story = [
     *bullets([
         'Fest aufstellen (Stativ), etwa 1–2 Meter vom Spieler entfernt. <b>Hochkant oder quer</b>: So wie das Handy '
         'steht, wird gefilmt. Hochkant passt für die Schlagbewegung, quer für den Anlauf.',
-        'Liegt das Bild am Tablet auf der Seite: dort unter dem Live-Bild <b>„Drehen“</b> tippen.',
+        'Liegt ein Bild am Tablet auf der Seite: darunter <b>„Drehen“</b> tippen, bis es stimmt.',
         'Die Seite muss <b>offen und im Vordergrund</b> bleiben. Wird das Handy gesperrt, stoppt die Kamera. '
         'Der Bildschirm bleibt von selbst an.',
         'Ans <b>Ladegerät oder eine Powerbank</b> hängen – Filmen und Senden brauchen viel Strom.',
@@ -160,7 +160,7 @@ story = [
         ('„Vermittlung nicht erreichbar“', 'Hat das Gerät Internet? Zum Verbinden ist es kurz nötig.'),
         ('Geräte finden sich nicht', 'Manche Gäste-WLANs trennen die Geräte. Dann das Tablet mit dem Hotspot des Handys verbinden.'),
         ('„WLAN zu langsam!“', 'Näher zusammenrücken oder die Qualität auf 4 Mbit/s senken (Zahnrad).'),
-        ('Bild liegt auf der Seite', 'Am Tablet unter dem Live-Bild „Drehen“ tippen, bis es stimmt.'),
+        ('Bild liegt auf der Seite', 'Unter Live-Bild oder Szene <b>„Drehen“</b> tippen, bis es stimmt.'),
         ('Bild bleibt stehen', 'Handy gesperrt? Die Seite am Handy wieder nach vorn holen.'),
         ('Zu viele / wenige Szenen', 'Mindestgröße <b>erhöhen</b> (oder einen Bereich zeichnen) / <b>senken</b>.'),
     ], [50 * mm, W - 50 * mm]),
@@ -179,6 +179,7 @@ story = [
         ('Zwei Finger spreizen', 'Stufenlos zoomen'),
         ('Schleife: von  /  bis  /  ' + SYM('✕'), 'Ausschnitt wiederholen: Anfang / Ende / aufheben'),
         ('Szene lange drücken', 'Im zweiten Player öffnen (Vergleich)'),
+        ('Drehen (runder Pfeil)', 'Bild eine Vierteldrehung weiterdrehen. Neue Szenen kommen dann genauso'),
         ('Behalten (Stern ' + SYM('★') + ')', 'Szene wird nie von selbst gelöscht'),
         ('Speichern (Pfeil nach unten)', 'Szene teilen oder in „Fotos“ sichern'),
         ('Szene markieren', 'Die letzten 8 Sekunden speichern'),
@@ -186,10 +187,10 @@ story = [
     ], [70 * mm, W - 70 * mm], key_style=big_key, txt_style=big_txt, pad=7),
     Spacer(1, 10),
     Paragraph('Die Leiste unter der Szene passt sich dem Bildschirm an: Ist wenig Platz, steht sie in zwei Zeilen und zeigt '
-              'bei „Behalten“ und „Speichern“ nur das Zeichen. Alle Zeichen erklärt das <b>?</b> oben rechts am Tablet.', body),
+              'bei „Drehen“, „Behalten“ und „Speichern“ nur das Zeichen. Alle Zeichen erklärt das <b>?</b> oben rechts am Tablet.', body),
     Spacer(1, 8),
     Paragraph('Am PC mit Tastatur: Leertaste = Abspielen/Pause · Pfeiltasten = Bild für Bild · 1–5 = Tempo · '
-              'A / B / L = Schleife von / bis / aufheben · M = Szene markieren · P = Pause · S = Behalten · D = Live/verzögert', small),
+              'A / B / L = Schleife von / bis / aufheben · M = Szene markieren · P = Pause · R = Szene drehen · S = Behalten · D = Live/verzögert', small),
 ]
 
 doc = BaseDocTemplate(sys.argv[1] if len(sys.argv) > 1 else 'Anleitung-Trainings-Kamera.pdf', pagesize=A4,

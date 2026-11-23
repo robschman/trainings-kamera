@@ -10,10 +10,51 @@ const CODECS = [
 ];
 const KEY_EVERY_US = 500000; // alle 0,5 s ein Schlüsselbild: genaue Schnitte, schnelles Springen
 
+// ---------- Liegt das aufgenommene Bild anders als das Bild am Bildschirm? ----------
+// Safari am iPhone und iPad gibt die Kamerabilder so weiter, wie der Kamera-Chip sie sieht: Hochkant gehalten liegen
+// sie auf der Seite. Das <video> am Bildschirm zeigt der Browser dagegen richtig herum. Darum wird beides verglichen:
+// das Bild am Bildschirm ("shown") und das Bild, das in die Aufnahme geht ("raw"), jeweils stark verkleinert.
+const GRID = 16, FINE = 64;
+const probes = [];
+function gray(i, src) {
+  const cv = probes[i] ??= Object.assign(document.createElement('canvas'), { width: FINE, height: FINE });
+  const g = cv.g ??= cv.getContext('2d', { willReadFrequently: true });
+  g.drawImage(src, 0, 0, FINE, FINE);
+  const px = g.getImageData(0, 0, FINE, FINE).data, out = new Float32Array(GRID * GRID), k = FINE / GRID;
+  for (let y = 0; y < FINE; y++) for (let x = 0; x < FINE; x++) {
+    const p = (y * FINE + x) * 4;
+    out[(y / k | 0) * GRID + (x / k | 0)] += (px[p] * 3 + px[p + 1] * 6 + px[p + 2]) / (10 * k * k);
+  }
+  return out;
+}
+// Unterschied zwischen dem Bild am Bildschirm und dem um rot Grad (im Uhrzeigersinn) gedrehten Aufnahme-Bild
+function diff(a, b, rot) {
+  const n = GRID, m = n - 1;
+  let sum = 0;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const j = rot === 90 ? (m - x) * n + y : rot === 180 ? (m - y) * n + (m - x) : rot === 270 ? x * n + (m - y) : y * n + x;
+    sum += Math.abs(a[y * n + x] - b[j]);
+  }
+  return sum / (n * n);
+}
+// Liefert 0, 90, 180 oder 270: um so viel muss das Aufnahme-Bild im Uhrzeigersinn gedreht werden, damit es so steht
+// wie am Bildschirm. null = nicht eindeutig (zu dunkel, zu gleichförmig) – dann bleibt alles, wie es ist.
+export function measureRotation(shown, sw, sh, raw, rw, rh) {
+  if (!sw || !sh || !rw || !rh) return null;
+  const a = gray(0, shown), b = gray(1, raw);
+  // gleiches Format (beide quer oder beide hochkant): 0 oder 180 Grad, sonst 90 oder 270
+  const cand = (sw >= sh) === (rw >= rh) ? [0, 180] : [90, 270];
+  const e = cand.map(r => diff(a, b, r));
+  const best = e[0] <= e[1] ? 0 : 1;
+  if (e[1 - best] < 8 || e[best] > e[1 - best] * 0.5) return null;
+  return cand[best];
+}
+
 export class Encoder extends EventTarget {
   running = false;
   hold = false;      // true = Bilder verwerfen (niemand hört zu oder die Funkstrecke ist verstopft)
   width = 0; height = 0;
+  rotation = 0;      // so liegt das aufgenommene Bild gegenüber dem Bildschirm (siehe measureRotation)
   codec = '';
   frames = 0;        // kodierte Bilder seit Start (für die fps-Anzeige)
   #gen = 0;
@@ -22,6 +63,7 @@ export class Encoder extends EventTarget {
   #outTimes = [];    // Zeitpunkte der letzten Ausgaben
   #checkFrom = 0;
   #attempts = 0;
+  #rot = { next: 0, seen: null, count: 0, known: false, extra: 0 };   // Nachmessen der Bildlage
 
   // Den Hardware-Encoder einmal "aufwärmen", BEVOR die Kamera geöffnet wird.
   // Gemessen in Chrome am Mac: der allererste Hardware-Encoder nach dem Browser-Start braucht 6–9 s
@@ -48,7 +90,8 @@ export class Encoder extends EventTarget {
     })();
   }
 
-  async start({ video, track, bitrate, fps }) {
+  // rawTurn (nur für Tests): die Bilder so weitergeben, als läge der Kamera-Chip quer – wie Safari am iPhone und iPad
+  async start({ video, track, bitrate, fps, rawTurn = 0 }) {
     this.stop();
     this.running = true;
     this.bitrate = bitrate * 1e6;
@@ -56,6 +99,9 @@ export class Encoder extends EventTarget {
     this.video = video;
     this.base = 0; this.ft0 = null; this.lastTs = 0; this.lastKeyTs = -Infinity;
     this.width = this.height = 0;
+    this.rotation = 0;
+    this.#rot = { next: 0, seen: null, count: 0, known: false, extra: 0 };
+    this.sentConfig = false;
     this.#checkFrom = performance.now();
     this.#outTimes = [];
     this.watch = setInterval(() => this.#watchdog(), 500);
@@ -79,10 +125,21 @@ export class Encoder extends EventTarget {
         if (!video.videoWidth) return;
         let frame;
         try { frame = new VideoFrame(video, { timestamp: 0 }); } catch { return; }
+        if (rawTurn) frame = this.#turnRaw(frame, rawTurn);
         this.#onFrame(frame, meta?.mediaTime != null ? meta.mediaTime * 1e6 : NaN);
       };
       this.rvfc = video.requestVideoFrameCallback(loop);
     }
+  }
+
+  #turnRaw(frame, r) {
+    const fw = frame.displayWidth, fh = frame.displayHeight, w = r % 180 ? fh : fw, h = r % 180 ? fw : fh;
+    const c = this.rawCanvas ??= new OffscreenCanvas(w, h);
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    const g = c.getContext('2d');
+    g.save(); g.translate(w / 2, h / 2); g.rotate(-r * Math.PI / 180); g.drawImage(frame, -fw / 2, -fh / 2); g.restore();
+    frame.close();
+    return new VideoFrame(c, { timestamp: 0 });
   }
 
   stop() {
@@ -162,9 +219,40 @@ export class Encoder extends EventTarget {
     this.forceKey();
   }
 
+  // Wie liegt das Bild, das in die Aufnahme geht, gegenüber dem Bildschirm? Zwei Quellen:
+  //  – Chrome vermerkt die Lage am Bild selbst (frame.rotation), kodiert es aber ungedreht;
+  //  – Safari vermerkt nichts: dort wird etwa einmal pro Sekunde nachgemessen (measureRotation).
+  // Ändert sich die Lage (Gerät gedreht), geht die Einstellung neu hinaus – wer zuhört, beginnt damit einen neuen
+  // Abschnitt. Die erste klare Messung gilt sofort, jede spätere erst, wenn zwei hintereinander dasselbe sagen.
+  #watchRotation(frame) {
+    const now = performance.now(), v = this.video, s = this.#rot;
+    if (v?.videoWidth && now >= s.next) {
+      s.next = now + 1000;
+      let r = null;
+      try { r = measureRotation(v, v.videoWidth, v.videoHeight, frame, frame.displayWidth, frame.displayHeight); } catch {}
+      if (r == null || r === s.extra) { s.count = 0; s.known ||= r != null; }
+      else {
+        if (r !== s.seen) { s.seen = r; s.count = 0; }
+        if (++s.count >= (s.known ? 2 : 1)) { s.count = 0; s.known = true; s.extra = r; }
+        else s.next = now + 300;
+      }
+    }
+    const total = ((frame.rotation || 0) + s.extra) % 360;
+    if (total === this.rotation) return;
+    this.rotation = total;
+    if (!this.sentConfig) return;   // noch nichts gesendet: die Einstellung geht gleich mit der richtigen Lage hinaus
+    this.config = { ...this.config, rotation: total };
+    this.forceKey();
+    this.dispatchEvent(new CustomEvent('config', { detail: this.config }));
+  }
+
   #onFrame(frame, ft) {
-    // H.264 braucht gerade Seitenlängen
-    const w = frame.displayWidth - frame.displayWidth % 2, h = frame.displayHeight - frame.displayHeight % 2;
+    this.#watchRotation(frame);
+    // Der Encoder bekommt das Bild so, wie es gespeichert ist: Ist am Bild eine Vierteldrehung vermerkt,
+    // sind Breite und Höhe der Anzeige vertauscht. H.264 braucht außerdem gerade Seitenlängen.
+    const side = (frame.rotation || 0) % 180 !== 0;
+    const fw = side ? frame.displayHeight : frame.displayWidth, fh = side ? frame.displayWidth : frame.displayHeight;
+    const w = fw - fw % 2, h = fh - fh % 2;
     if (w !== this.width || h !== this.height) {
       frame.close();
       // neue Bildgröße (Start oder Handy gedreht): Encoder neu einrichten
@@ -194,7 +282,7 @@ export class Encoder extends EventTarget {
       const d = dc.description;
       this.config = {
         codec: dc.codec || this.codec,
-        width: this.width, height: this.height,
+        width: this.width, height: this.height, rotation: this.rotation,
         description: d ? new Uint8Array(d.buffer ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : d.slice(0)) : null,
       };
       this.dispatchEvent(new CustomEvent('config', { detail: this.config }));

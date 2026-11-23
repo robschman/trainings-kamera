@@ -162,7 +162,7 @@ def story():
         table([
             ('Tablet wartet auf das Handy', 'Selbes WLAN? Am Handy die Seite neu laden und wieder „Kamera starten“ tippen.'),
             ('Bild bleibt stehen', 'Handy gesperrt? Die Seite wieder nach vorn holen.'),
-            ('Bild liegt auf der Seite', 'Am Tablet unter dem Live-Bild „Drehen“ tippen.'),
+            ('Bild liegt auf der Seite', 'Unter dem Bild „Drehen“ tippen, bis es stimmt.'),
             ('Zu viele / zu wenige Szenen', 'Zahnrad oben rechts: Mindestgröße erhöhen / senken.'),
         ], 47 * mm),
     ]
